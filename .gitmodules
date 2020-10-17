@@ -1,0 +1,3 @@
+[submodule "webgl2-utils"]
+	path = webgl2-utils
+	url = https://github.com/mrWeiss0/webgl2-utils.git
