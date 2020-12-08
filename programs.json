@@ -1,0 +1,19 @@
+{
+	"path" : "shaders",
+	"shaders" : [
+		{
+			"type" : "VERTEX_SHADER",
+			"url"  : "vert.glsl"
+		},
+		{
+			"type" : "FRAGMENT_SHADER",
+			"url"  : "frag.glsl"
+		}
+	],
+	"programs" : [
+		{
+			"name"	: "main",
+			"shaders" : [ "vert.glsl", "frag.glsl" ]
+		}
+	]
+}
