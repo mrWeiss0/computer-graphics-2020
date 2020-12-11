@@ -72,14 +72,15 @@ export class Rocket extends LinkedList {
 		hmax -= this._pos.y;
 		if(hmax <= 0 || hmax < target.y)
 			throw new Error("Invalid trajectory height");
-		this._hdir     = new Vec2(target.z, target.x).normalized();
+		const htg      = new Vec2(target.z, target.x);
+		this._hdir     = htg.normalized();
 		const aag      = vacc * (vacc + g);
 		this._timeout  = Math.sqrt(2 * g * hmax / aag);
 		const aag1yh   = aag * (1 - target.y / hmax);
 		const r_aag1yh = Math.sqrt(aag1yh);
 		this._ttl      = this._timeout * (vacc + g + r_aag1yh) / g ;
 		const a2g      = vacc * 2 + g;
-		this._hvacc.x  = target.x / hmax * aag * (a2g - 2 * r_aag1yh) / (a2g**2 - 4 * aag1yh);
+		this._hvacc.x  = htg.modulo / hmax * aag * (a2g - 2 * r_aag1yh) / (a2g**2 - 4 * aag1yh);
 		this._hvacc.y  = vacc + g;
 		return this;
 	}
