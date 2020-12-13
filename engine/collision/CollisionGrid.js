@@ -36,15 +36,8 @@ export class CollisionGrid {
 	}
 
 	_addTriangle(ax, az, bx, bz, cx, cz, floorID, geometryName) {
-		const maxX = Math.max(ax, bx, cx);
-		const minX = Math.min(ax, bx, cx);
-		const maxZ = Math.max(az, bz, cz);
-		const minZ = Math.min(az, bz, cz);
-
-		const fromX = Math.floor((minX + this.offsetX) / this.cellLenX);
-		const toX = Math.floor((maxX + this.offsetX) / this.cellLenX);
-		const fromZ = Math.floor((minZ + this.offsetZ) / this.cellLenZ);
-		const toZ = Math.floor((maxZ + this.offsetZ) / this.cellLenZ);
+		const [ fromX, fromZ ] = this._findCell(Math.min(ax, bx, cx), Math.min(az, bz, cz));
+		const [   toX,   toZ ] = this._findCell(Math.max(ax, bx, cx), Math.max(az, bz, cz));
 
 		for (let i = fromX; i <= toX; i++) {
 			if (this.grid[i] == undefined) {
@@ -62,7 +55,6 @@ export class CollisionGrid {
 	_findCell(x, z) {
 		const i = Math.floor((x + this.offsetX) / this.cellLenX);
 		const j = Math.floor((z + this.offsetZ) / this.cellLenZ);
-
 		return [i, j];
 	}
 
