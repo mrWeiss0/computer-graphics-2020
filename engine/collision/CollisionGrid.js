@@ -1,28 +1,20 @@
 export class CollisionGrid {
-	static DENSITY = 1;
-	constructor(minX, maxX, minZ, maxZ) {
+	constructor(minX, maxX, minZ, maxZ, cellLenX, cellLenZ) {
 		this.lenX = maxX - minX;
 		this.lenZ = maxZ - minZ;
 		this.offsetX = 0 - minX;
 		this.offsetZ = 0 - minZ;
 
-		this.nCells;
-		this.cellLenX;
-		this.cellLenZ;
+		this.cellLenX = +cellLenX;
+		this.cellLenZ = +cellLenZ;
+		this.nCells = Math.ceil(this.lenX / this.cellLenX) *
+		              Math.ceil(this.lenZ / this.cellLenZ);
 
 		this.grid = [];
 		this.geometries = new Map();
 	}
 
 	addGeometry(frenchMeshInited, facePlanes, geometryName) {
-		//if first geometry, set parameters
-		if (!(this.geometries.size)) {
-			const nTriangles = frenchMeshInited.indices.length / 3;
-			this.nCells = Math.floor(nTriangles / this.constructor.DENSITY) + 1;
-			this.cellLenX = this.lenX / Math.sqrt(this.nCells);
-			this.cellLenZ = this.lenZ / Math.sqrt(this.nCells);
-		}
-
 		this.geometries.set(geometryName, { mesh: frenchMeshInited, planes: facePlanes });
 
 		const vertices = frenchMeshInited.vertices;
