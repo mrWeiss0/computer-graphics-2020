@@ -1,15 +1,10 @@
 export class CollisionGrid {
 	constructor(minX, maxX, minZ, maxZ, cellLenX, cellLenZ) {
-		this.lenX = maxX - minX;
-		this.lenZ = maxZ - minZ;
-		this.offsetX = 0 - minX;
-		this.offsetZ = 0 - minZ;
-
-		this.cellLenX = +cellLenX;
-		this.cellLenZ = +cellLenZ;
-		this.nCells = Math.ceil(this.lenX / this.cellLenX) *
-		              Math.ceil(this.lenZ / this.cellLenZ);
-
+		this.offset  = [  0 - minX,  0 - minZ ];
+		this.cellLen = [ +cellLenX, +cellLenZ ];
+		const len    = [ maxX - minX, maxZ - minZ ];
+		this.nCells  = [ Math.ceil(len[0] / this.cellLen[0]),
+		                 Math.ceil(len[1] / this.cellLen[1]) ];
 		this.grid = [];
 		this.geometries = new Map();
 	}
@@ -53,8 +48,8 @@ export class CollisionGrid {
 	}
 
 	_findCell(x, z) {
-		const i = Math.floor((x + this.offsetX) / this.cellLenX);
-		const j = Math.floor((z + this.offsetZ) / this.cellLenZ);
+		const i = Math.floor((x + this.offset[0]) / this.cellLen[0]);
+		const j = Math.floor((z + this.offset[1]) / this.cellLen[1]);
 		return [i, j];
 	}
 
