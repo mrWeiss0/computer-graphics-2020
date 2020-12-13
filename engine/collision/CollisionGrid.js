@@ -5,7 +5,7 @@ export class CollisionGrid {
 		const len    = [ maxX - minX, maxZ - minZ ];
 		this.nCells  = [ Math.ceil(len[0] / this.cellLen[0]),
 		                 Math.ceil(len[1] / this.cellLen[1]) ];
-		this.grid = [];
+		this.grid       = Array.from({length : this.nCells[0] * this.nCells[1]}, () => []);
 		this.geometries = new Map();
 	}
 
@@ -34,17 +34,9 @@ export class CollisionGrid {
 		const [ fromX, fromZ ] = this._findCell(Math.min(ax, bx, cx), Math.min(az, bz, cz));
 		const [   toX,   toZ ] = this._findCell(Math.max(ax, bx, cx), Math.max(az, bz, cz));
 
-		for (let i = fromX; i <= toX; i++) {
-			if (this.grid[i] == undefined) {
-				this.grid[i] = [];
-			}
-			for (let j = fromZ; j <= toZ; j++) {
-				if (this.grid[i][j] == undefined) {
-					this.grid[i][j] = [];
-				}
-				this.grid[i][j].push([floorID, geometryName]);
-			}
-		}
+		for (let i = fromX; i <= toX; i++)
+			for (let j = fromZ; j <= toZ; j++)
+				this._getCellList(i, j).push([floorID, geometryName]);
 	}
 
 	_findCell(x, z) {
@@ -54,10 +46,9 @@ export class CollisionGrid {
 	}
 
 	_getCellList(i, j) {
-		if (this.grid[i] == undefined) {
-			return undefined;
-		}
-		return this.grid[i][j];
+		if(i < 0 || j < 0 || i >= this.nCells[0] || j >= this.nCells[1])
+			throw new Error("Cell out of bounds");
+		return this.grid[i + j * this.nCells[0]];
 	}
 }
 
