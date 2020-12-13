@@ -20,47 +20,6 @@ export function minMaxXZ(mesh) {
 	return [minX, maxX, minZ, maxZ];
 }
 
-export function planesArray(mesh) {
-	const normalPlanes = [];
-
-	const vertices = mesh.vertices;
-	const indices = mesh.indices;
-	const indexLen = mesh.indices.length;
-
-	for (let i = 0; i < indexLen; i += 3) {
-		const ax = vertices[indices[i] * 3];
-		const ay = vertices[indices[i] * 3 + 1];
-		const az = vertices[indices[i] * 3 + 2];
-		const bx = vertices[indices[i + 1] * 3];
-		const by = vertices[indices[i + 1] * 3 + 1];
-		const bz = vertices[indices[i + 1] * 3 + 2];
-		const cx = vertices[indices[i + 2] * 3];
-		const cy = vertices[indices[i + 2] * 3 + 1];
-		const cz = vertices[indices[i + 2] * 3 + 2];
-
-		normalPlanes.push(planeFromTriangle(ax, ay, az, bx, by, bz, cx, cy, cz));
-	}
-	return normalPlanes;
-}
-
-export function planeFromTriangle(ax, ay, az, bx, by, bz, cx, cy, cz) {
-	const rx = bx - ax;
-	const ry = by - ay;
-	const rz = bz - az;
-
-	const sx = cx - ax;
-	const sy = cy - ay;
-	const sz = cz - az;
-
-	const nx = ry * sz - rz * sy;
-	const ny = rz * sx - rx * sz;
-	const nz = rx * sy - ry * sx;
-
-	const d = -(nx * ax + ny * ay + nz * az);
-
-	return [nx, ny, nz, d];
-}
-
 export function meshTransform(mesh, transformation) {
 	//2 things need be transformed: vertices and normals
 

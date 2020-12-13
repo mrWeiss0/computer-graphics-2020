@@ -6,37 +6,40 @@ export class CollisionGrid {
 		this.nCells  = [ Math.ceil(len[0] / this.cellLen[0]),
 		                 Math.ceil(len[1] / this.cellLen[1]) ];
 		this.grid       = Array.from({length : this.nCells[0] * this.nCells[1]}, () => []);
-		this.geometries = new Map();
+		this.geometries = [];
 	}
 
-	addGeometry(frenchMeshInited, facePlanes, geometryName) {
-		this.geometries.set(geometryName, { mesh: frenchMeshInited, planes: facePlanes });
+	addGeometry(frenchMesh) {
+		const vertices = frenchMesh.vertices;
+		const indices  = frenchMesh.indices;
+		const planes   = new Array(Math.floor(indices.length / 3));
+		const geometry = {mesh: frenchMesh, planes: planes};
 
-		const vertices = frenchMeshInited.vertices;
-		const indices = frenchMeshInited.indices;
-		const nIndices = frenchMeshInited.indices.length;
+		for(let i = 0; i < planes.length; i++) {
+			const ax = vertices[indices[i * 3 + 0] * 3 + 0];
+			const ay = vertices[indices[i * 3 + 0] * 3 + 1];
+			const az = vertices[indices[i * 3 + 0] * 3 + 2];
+			const bx = vertices[indices[i * 3 + 1] * 3 + 0];
+			const by = vertices[indices[i * 3 + 1] * 3 + 1];
+			const bz = vertices[indices[i * 3 + 1] * 3 + 2];
+			const cx = vertices[indices[i * 3 + 2] * 3 + 0];
+			const cy = vertices[indices[i * 3 + 2] * 3 + 1];
+			const cz = vertices[indices[i * 3 + 2] * 3 + 2];
 
-		for (let i = 0; i < nIndices; i += 3) {
-			this._addTriangle(
-				vertices[indices[i] * 3],
-				vertices[indices[i] * 3 + 2],
-				vertices[indices[i + 1] * 3],
-				vertices[indices[i + 1] * 3 + 2],
-				vertices[indices[i + 2] * 3],
-				vertices[indices[i + 2] * 3 + 2],
-				i / 3,
-				geometryName
-			);
+			planes[i] = planeFromTriangle(ax, ay, az, bx, by, bz, cx, cy, cz);
+			this._addTriangle(ax, az, bx, bz, cx, cz, i, geometry);
 		}
+
+		this.geometries.push(geometry);
 	}
 
-	_addTriangle(ax, az, bx, bz, cx, cz, floorID, geometryName) {
+	_addTriangle(ax, az, bx, bz, cx, cz, floorID, geometry) {
 		const [ fromX, fromZ ] = this._findCell(Math.min(ax, bx, cx), Math.min(az, bz, cz));
 		const [   toX,   toZ ] = this._findCell(Math.max(ax, bx, cx), Math.max(az, bz, cz));
 
 		for (let i = fromX; i <= toX; i++)
 			for (let j = fromZ; j <= toZ; j++)
-				this._getCellList(i, j).push([floorID, geometryName]);
+				this._getCellList(i, j).push([floorID, geometry]);
 	}
 
 	_findCell(x, z) {
@@ -50,6 +53,24 @@ export class CollisionGrid {
 			throw new Error("Cell out of bounds");
 		return this.grid[i + j * this.nCells[0]];
 	}
+}
+
+function planeFromTriangle(ax, ay, az, bx, by, bz, cx, cy, cz) {
+	const rx = bx - ax;
+	const ry = by - ay;
+	const rz = bz - az;
+
+	const sx = cx - ax;
+	const sy = cy - ay;
+	const sz = cz - az;
+
+	const nx = ry * sz - rz * sy;
+	const ny = rz * sx - rx * sz;
+	const nz = rx * sy - ry * sx;
+
+	const d = -(nx * ax + ny * ay + nz * az);
+
+	return [nx, ny, nz, d];
 }
 
 export class FloorGrid extends CollisionGrid {
