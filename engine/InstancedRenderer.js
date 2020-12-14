@@ -100,7 +100,7 @@ export class InstancedRenderer {
 		const matBuffer = this._globals.buffers.mat;
 		const viewMatrix = this._globals.viewMatrix;
 		this._matArray.set(viewMatrix.mul(obj.worldMatrix).val, matBuffer.itemSize * this._count);
-		this._matArray.set(new Mat3(viewMatrix.mul(obj.worldMatrix).transposed().inverse()).val, matBuffer.itemSize * this._count + 16);
+		this._matArray.set(new Mat3(viewMatrix.mul(obj.worldMatrix)).transposed().inverse().val, matBuffer.itemSize * this._count + 16);
 		if(++this._count >= matBuffer.numItems)
 			this.flush();
 	}
