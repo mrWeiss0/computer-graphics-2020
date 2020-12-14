@@ -1,3 +1,6 @@
+import {utils} from "./index.js";
+const Vec3 = utils.matrix.Vec3;
+
 export class CollisionGrid {
 	constructor(minX, maxX, minZ, maxZ, cellLenX, cellLenZ) {
 		this.offset  = [  0 - minX,  0 - minZ ];
@@ -17,16 +20,15 @@ export class CollisionGrid {
 		for(let i = 0; i < planes.length; i++) {
 			const floor = new Floor(geometry, i);
 			const vert = floor.vertices;
-			geometry.planes[i] = planeFromTriangle(...vert);
-			const [ax, , az, bx, , bz, cx, , cz] = vert;
-			this._addTriangle(ax, az, bx, bz, cx, cz, floor);
+			geometry.planes[i] = _planeFromTriangle(vert);
+			this._addTriangle(vert, floor);
 		}
 		this.geometries.push(geometry);
 	}
 
-	_addTriangle(ax, az, bx, bz, cx, cz, floor) {
-		const [ fromX, fromZ ] = this._findCell(Math.min(ax, bx, cx), Math.min(az, bz, cz));
-		const [   toX,   toZ ] = this._findCell(Math.max(ax, bx, cx), Math.max(az, bz, cz));
+	_addTriangle([a, b, c], floor) {
+		const [ fromX, fromZ ] = this._findCell(Math.min(a.x, b.x, c.x), Math.min(a.z, b.z, c.z));
+		const [   toX,   toZ ] = this._findCell(Math.max(a.x, b.x, c.x), Math.max(a.z, b.z, c.z));
 
 		for (let i = fromX; i <= toX; i++)
 			for (let j = fromZ; j <= toZ; j++)
@@ -57,35 +59,27 @@ class Floor {
 	get vertices() {
 		const vertices = this.geometry.mesh.vertices;
 		const indices  = this.geometry.mesh.indices;
-		const vert     = new Array(9);
+		const vert     = Array.from({length : 3}, () => new Vec3(0));
 		const floorID = this.id * 3;
 		for(let j = 0; j < 3; j++)
 			for(let i = 0; i < 3; i++)
-				vert[i + j * 3] = vertices[indices[floorID + j] * 3 + i];
+				vert[j * 3].set(i, vertices[indices[floorID + j] * 3 + i]);
 		return vert;
 	}
 
-	get plane() {
-		return this.geometry.planes[this.id];
+	get normal() {
+		return this.geometry.planes[this.id][0];
+	}
+
+	get offset() {
+		return this.geometry.planes[this.id][1];
 	}
 }
 
-function planeFromTriangle(ax, ay, az, bx, by, bz, cx, cy, cz) {
-	const rx = bx - ax;
-	const ry = by - ay;
-	const rz = bz - az;
-
-	const sx = cx - ax;
-	const sy = cy - ay;
-	const sz = cz - az;
-
-	const nx = ry * sz - rz * sy;
-	const ny = rz * sx - rx * sz;
-	const nz = rx * sy - ry * sx;
-
-	const d = -(nx * ax + ny * ay + nz * az);
-
-	return [nx, ny, nz, d];
+function _planeFromTriangle([a, b, c]) {
+	const n = b.sub(a).cross(c.sub(a));
+	const d = -n.mul(a);
+	return [n, d];
 }
 
 export class FloorGrid extends CollisionGrid {
