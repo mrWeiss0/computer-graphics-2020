@@ -1,43 +1,35 @@
-export function minMaxXZ(mesh) {
+import {utils} from "./index.js";
+const [Mat3, Vec3, Vec4] = [utils.matrix.Mat3, utils.matrix.Vec3, utils.matrix.Vec4];
+
+export function minMax(mesh) {
 	const vertices = mesh.vertices;
-	const vertexLen = mesh.vertices.length;
 
-	let maxX = vertices[0];
-	let minX = vertices[0 + 2];
-	let maxZ = vertices[0];
-	let minZ = vertices[0 + 2];
+	const min = [ Infinity,  Infinity,  Infinity];
+	const max = [-Infinity, -Infinity, -Infinity];
 
-	for (let i = 0; i < vertexLen; i += 3) {
-		const currX = vertices[i];
-		const currZ = vertices[i + 2];
-
-		if (maxX < currX) { maxX = currX };
-		if (minX > currX) { minX = currX };
-		if (maxZ < currZ) { maxZ = currZ };
-		if (minZ > currZ) { minZ = currZ };
+	for (let i = 0; i < vertices.length; i++) {
+		const c = vertices[i];
+		if (max[i % 3] < c) max[i % 3] = c;
+		if (min[i % 3] > c) min[i % 3] = c;
 	}
 
-	return [minX, maxX, minZ, maxZ];
+	return [min, max];
 }
 
 export function meshTransform(mesh, transformation) {
 	//2 things need be transformed: vertices and normals
 
 	//vertices
-	const nVertices = mesh.vertices.length;
 	const vertices = mesh.vertices;
-	for (let i = 0; i < nVertices; i += 3) {
-		//   let oldVertex = new Vec4([...mesh.vertices.slice(i, i+3), 1]);
-		//   newVertices.push(...(transformation.mul(oldVertex).val.slice(0,3)));
+	for (let i = 0; i < vertices.length; i += 3) {
 		const currVertex = new Vec4(vertices[i], vertices[i + 1], vertices[i + 2], 1);
 		[vertices[i], vertices[i + 1], vertices[i + 2]] = transformation.mul(currVertex).val;
 	}
 
 	//normals
-	const normalTransf = new Mat3(transformation).trasposed().invert();
-	const nNormals = mesh.indices.length;
+	const normalTransf = new Mat3(transformation).trasposed().inverse();
 	const normals = mesh.normals;
-	for (let i = 0; i < nNormals; i += 3) {
+	for (let i = 0; i < normals.length; i += 3) {
 		const currNormal = new Vec3(normals[i], normals[i + 1], normals[i + 2]);
 		[normals[i], normals[i + 1], normals[i + 2]] = normalTransf.mul(currNormal).val;
 	}
