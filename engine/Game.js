@@ -1,9 +1,7 @@
-import {App} from "../webgl2-utils/index.js";
-import {Mat4} from "../webgl2-utils/matrix/index.js";
-import {RocketGroup} from "./rocket/index.js";
-import {Globals} from "./Globals.js";
+import {utils, rocket, Globals} from "./index.js";
+const Mat4 = utils.matrix.Mat4;
 
-export class Game extends App {
+export class Game extends utils.App {
 	constructor(canvas, {INSTANCED_BUFSIZE = 1, MAX_LIGHTS = 1, LIGHTS_BIND = 0} = {}) {
 		super(canvas);
 		
@@ -25,7 +23,7 @@ export class Game extends App {
 		glContext.clearColor(0, 0, 0, 0);
 		glContext.enable(glContext.DEPTH_TEST);
 
-		this.rockets = new RocketGroup(this.globals);
+		this.rockets = new rocket.RocketGroup(this.globals);
 	}
 
 	autoResize() {

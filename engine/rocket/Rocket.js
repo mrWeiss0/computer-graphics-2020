@@ -1,5 +1,6 @@
-import {Mat4, Vec2, Vec3} from "../../webgl2-utils/matrix/index.js";
-import {LinkedList} from "../../webgl2-utils/index.js";
+import {utils} from "./index.js";
+const LinkedList = utils.LinkedList;
+const matrix = utils.matrix;
 
 /*
  * Rocket class
@@ -24,19 +25,19 @@ export class Rocket extends LinkedList {
 		super();
 		this._globals  = globals;
 		this._rederer  = renderer;
-		this._pos      = new Vec3(0);
+		this._pos      = new matrix.Vec3(0);
 		// Rotation around its axis
 		this._roll     = 0;
 		this._rspe     = 0;
 		// Vec2 direction on XZ plane for decomposing velocity and acceleration 
-		this._hdir     = new Vec2(0, 0);
+		this._hdir     = new matrix.Vec2(0, 0);
 		// Propulsion timeout
 		this._timeout  = 0;
 		// Time to live before reaching target
 		this._ttl      = 0;
 		// Acceleration and velocity XZ and Y components
-		this._hvacc    = new Vec2(0, 0);
-		this._hvvel    = new Vec2(0, 0);
+		this._hvacc    = new matrix.Vec2(0, 0);
+		this._hvvel    = new matrix.Vec2(0, 0);
 		// Horizontal and vertical scale
 		this._hvscale  = [1, 1];
 		this._wrldMat  = null;
@@ -67,12 +68,12 @@ export class Rocket extends LinkedList {
 	trajectory(target, hmax, vacc) {
 		const g = this._globals.gravity;
 		if(Array.isArray(target))
-			target = new Vec3(target);
+			target = new matrix.Vec3(target);
 		target = target.sub(this._pos);
 		hmax -= this._pos.y;
 		if(hmax <= 0 || hmax < target.y)
 			throw new Error("Invalid trajectory height");
-		const htg      = new Vec2(target.z, target.x);
+		const htg      = new matrix.Vec2(target.z, target.x);
 		this._hdir     = htg.normalized();
 		const aag      = vacc * (vacc + g);
 		this._timeout  = Math.sqrt(2 * g * hmax / aag);
@@ -113,10 +114,10 @@ export class Rocket extends LinkedList {
 	/* Get the world transform matrix */
 	get worldMatrix() {
 		if(this._wrldMat == null)
-			this._wrldMat = Mat4.transl(...this._pos.val)
+			this._wrldMat = matrix.Mat4.transl(...this._pos.val)
 			           .mul(this._pitchyaw)
-			           .mul(Mat4.rotZ(this._roll))
-			           .mul(Mat4.scale(this._hvscale[0], this._hvscale[0], this._hvscale[1]));
+			           .mul(matrix.Mat4.rotZ(this._roll))
+			           .mul(matrix.Mat4.scale(this._hvscale[0], this._hvscale[0], this._hvscale[1]));
 		return this._wrldMat;
 	}
 
@@ -166,9 +167,9 @@ export class Rocket extends LinkedList {
 	get _pitchyaw() {
 		let pitch = this._hvvel;
 		if(!pitch.modulo)
-			pitch = new Vec2(this._hvacc.x, this._hvacc.y - this._globals.gravity);
+			pitch = new matrix.Vec2(this._hvacc.x, this._hvacc.y - this._globals.gravity);
 		if(!pitch.modulo)
-			return Mat4.rotX([0, -1]);
-		return Mat4.rotY([-this._hdir.x, -this._hdir.y]).mul(Mat4.rotX([-pitch.x/pitch.modulo, -pitch.y/pitch.modulo]));
+			return matrix.Mat4.rotX([0, -1]);
+		return matrix.Mat4.rotY([-this._hdir.x, -this._hdir.y]).mul(matrix.Mat4.rotX([-pitch.x/pitch.modulo, -pitch.y/pitch.modulo]));
 	}
 }

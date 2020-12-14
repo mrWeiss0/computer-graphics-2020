@@ -1,4 +1,5 @@
-import {Vec4} from "../../webgl2-utils/matrix/index.js";
+import {utils} from "./index.js";
+const Vec4 = utils.matrix.Vec4;
 
 export class RocketGroup {
 	constructor(globals) {

@@ -1,6 +1,6 @@
 
-import {Mat4} from "../webgl2-utils/matrix/index.js";
-import {Camera} from "./Camera.js";
+import {utils, Camera} from "./index.js";
+const Mat4 = utils.matrix.Mat4;
 
 export class Globals {
 	constructor(glContext) {

@@ -1,7 +1,6 @@
 import {loadFile} from "./webgl2-utils/index.js";
-import {Game} from "./engine/Game.js";
-import {InstancedRenderer} from "./engine/InstancedRenderer.js";
-import {Rocket} from "./engine/rocket/index.js";
+import {Game, InstancedRenderer} from "./engine/index.js";
+import {rocket} from "./engine/index.js";
 import "./engine/webgl-obj-loader.min.js";
 
 const DEBUG = true;
@@ -32,9 +31,9 @@ async function init(game) {
 	// Test
 	const renderers = game.rockets.renderers;
 	let rockets = [
-		new Rocket(game.globals, renderers[0]).position(-80, -20,  0).trajectory([40,  0, 0], 10, 10),
-		new Rocket(game.globals, renderers[0]).position(-20, -10, 10).trajectory([10, 10, 5], 10, 15),
-		new Rocket(game.globals, renderers[1]).position(-20, -10, 10).trajectory([20, 10, 0], 15,  5)
+		new rocket.Rocket(game.globals, renderers[0]).position(-80, -20,  0).trajectory([40,  0, 0], 10, 10),
+		new rocket.Rocket(game.globals, renderers[0]).position(-20, -10, 10).trajectory([10, 10, 5], 10, 15),
+		new rocket.Rocket(game.globals, renderers[1]).position(-20, -10, 10).trajectory([20, 10, 0], 15,  5)
 	];
 	for(const rocket of rockets) {
 		game.rockets.addRocket(rocket);

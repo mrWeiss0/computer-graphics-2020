@@ -1,5 +1,6 @@
-import {ProgramWrapper} from "../webgl2-utils/program/index.js";
-import {Mat3} from "../webgl2-utils/matrix/index.js";
+import {utils} from "./index.js";
+const ProgramWrapper = utils.program.ProgramWrapper;
+const Mat3 = utils.matrix.Mat3;
 
 /*
  * Instanced renderer class
