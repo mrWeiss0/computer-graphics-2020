@@ -41,10 +41,12 @@ export class CollisionGrid {
 		return [i, j];
 	}
 
-	_getCellList(i, j) {
-		if(i < 0 || j < 0 || i >= this.nCells[0] || j >= this.nCells[1])
-			throw new Error("Cell out of bounds");
+	_getCellList(j, i) {
 		return this.grid[i + j * this.nCells[0]];
+	}
+
+	_outOfBounds(i, j) {
+		return i < 0 || j < 0 || i >= this.nCells[0] || j >= this.nCells[1];
 	}
 }
 
@@ -82,37 +84,36 @@ function _planeFromTriangle([a, b, c]) {
 	return [n, d];
 }
 
+const FLOOR_HITBOX = 78;
+
 export class FloorGrid extends CollisionGrid {
 	findFloorHeight(x, y, z) {
-		const floorList = this._getCellList(...this._findCell(x, z));
+		const [i, j] = this._findCell(x, z);
+		const found = {floor: null, height: -Infinity};
+		if(this._outOfBounds(i, j))
+			return found;
+		const floorList = this._getCellList(i, j);
 		
-		let actualFloor;
-		//let maxHeight;
 		for (let floor of floorList) {
-			const [ax, , az, bx, , bz, cx, , cz] = floor.vertices;
-			const plane = floor.plane;
-
+			const [a, b, c] = floor.vertices;
 			// Check that the point is within the triangle bounds.
-			if ((az - z) * (bx - ax) - (ax - x) * (bz - az) < 0) {
+			if ((a.z - z) * (b.x - a.x) - (a.x - x) * (b.z - a.z) < 0)
 				continue;
-			}
-			if ((bz - z) * (cx - bx) - (bx - x) * (cz - bz) < 0) {
+			if ((b.z - z) * (c.x - b.x) - (b.x - x) * (c.z - b.z) < 0)
 				continue;
-			}
-			if ((cz - z) * (ax - cx) - (cx - x) * (az - cz) < 0) {
+			if ((c.z - z) * (a.x - c.x) - (c.x - x) * (a.z - c.z) < 0)
 				continue;
-			}
 
-			const floorHeight = (plane[0] * x + plane[2] * z + plane[3]) / plane[1];
-			return floor;
-			// if(y>floorHeight && (maxHeight==undefined || maxHeight<floorHeight)){
-			//	   maxHeight = floorHeight;
-			// }
-			// if(y<floorHeight && (maxHeight==undefined || maxHeight<floorHeight)){
-			//	   maxHeight = floorHeight;
-			// }
+			const n  = floor.normal;
+			const oo = floor.offset;
+			const height = (n.x * x + n.z * z + oo) / n.y;
+			if (y - height + FLOOR_HITBOX < 0)
+				continue;
+
+			found.floor  = floor;
+			found.height = height;
+			break;
 		}
-		//return maxHeight;
-		return actualFloor;
+		return found;
 	}
 }
