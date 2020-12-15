@@ -1,4 +1,3 @@
-
 const FLOOR_HITBOX = 78;
 
 export class CollisionGrid {
@@ -21,6 +20,8 @@ export class CollisionGrid {
 			const floor = new Floor(geometry, i);
 			const vert = floor.vertices;
 			geometry.planes[i] = _planeFromTriangle(vert);
+			// Check if floor, wall or ceiling
+			// (Only floors are considered)
 			if(floor.normal.y <= 0)
 				continue;
 			this._addTriangle(vert, floor);
@@ -28,6 +29,17 @@ export class CollisionGrid {
 		this.geometries.push(geometry);
 	}
 
+	/*
+	 * Find the first floor under the point p = (x, y, z)
+	 * or the floor within FLOOR_HITBOX units above p.
+	 * Return an object {
+	 *   floor  : floor found,
+	 *   height : height of the floor under p
+	 * }
+	 * If p is out of bounds, either because its outside the grid
+	 * or because it below any other floor,
+	 * {floor: null, height: -Infinity} is return
+	 */
 	findFloorHeight(x, y, z) {
 		const [i, j] = this._findCell(x, z);
 		const found = {floor: null, height: -Infinity};
