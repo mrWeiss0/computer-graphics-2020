@@ -1,5 +1,4 @@
-import {utils} from "./index.js";
-const ProgramWrapper = utils.program.ProgramWrapper;
+import {utils, Renderer} from "./index.js";
 const Mat3 = utils.matrix.Mat3;
 
 /*
@@ -9,55 +8,21 @@ const Mat3 = utils.matrix.Mat3;
  * after enough objects are queued or when flush() method is called.
  * Objects need to have a worldMatrix property of type Mat4.
  */
-export class InstancedRenderer {
+export class InstancedRenderer extends Renderer {
 	constructor(globals, frenchMesh) {
-		this._globals    = globals;
-		this._frenchMesh = frenchMesh;
-		this._program    = null;
+		super(globals, frenchMesh);
 		this._count      = 0;
 		const matBuffer  = this._globals.buffers.mat;
 		if(!matBuffer)
 			throw new Error("mat buffer not defined");
 		this._matArray   = new Float32Array(matBuffer.itemSize * matBuffer.numItems);
-		this._vao        = this._globals.glContext.createVertexArray();
-	}
-
-	/* Get the program in use */
-	get program() {
-		return this._program;
-	}
-	
-	/* Set the program in use */
-	set program(program) {
-		if(program instanceof ProgramWrapper && program.glContext == this._globals.glContext)
-			this._program = program;
-		else
-			throw new Error("Invalid Program");
 	}
 
 	/* Initialize the Vertex Array Object */
 	initVAO() {
+		super.initVAO();
 		const program = this._program;
-		if(program == null)
-			throw new Error("Can't init VAO without a program");
 		const gl = this._globals.glContext;
-		const frenchMesh = this._frenchMesh;
-		gl.bindVertexArray(this._vao);
-
-		const a_position = program.getAttributeLocation("a_position");
-		gl.bindBuffer(gl.ARRAY_BUFFER, frenchMesh.vertexBuffer);
-		gl.enableVertexAttribArray(a_position);
-		gl.vertexAttribPointer(a_position, frenchMesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-		
-		const a_texcoord = program.getAttributeLocation("a_texcoord");
-		gl.bindBuffer(gl.ARRAY_BUFFER, frenchMesh.textureBuffer);
-		gl.enableVertexAttribArray(a_texcoord);
-		gl.vertexAttribPointer(a_texcoord, frenchMesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
-		
-		const a_normal = program.getAttributeLocation("a_normal");
-		gl.bindBuffer(gl.ARRAY_BUFFER, frenchMesh.normalBuffer);
-		gl.enableVertexAttribArray(a_normal);
-		gl.vertexAttribPointer(a_normal, frenchMesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
 		
 		const matBuffer  = this._globals.buffers.mat;
 		const a_objmat = program.getAttributeLocation("a_objmat");
@@ -90,8 +55,6 @@ export class InstancedRenderer {
 			gl.vertexAttribDivisor(columnLocation, 1);
 		}
 
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, frenchMesh.indexBuffer);
-
 		gl.bindVertexArray(null);
 	}
 
@@ -110,6 +73,7 @@ export class InstancedRenderer {
 		const gl = this._globals.glContext;
 
 		gl.bindVertexArray(this._vao);
+		gl.bindTexture(gl.TEXTURE_2D, this._tex);
 		gl.bindBuffer(gl.ARRAY_BUFFER, this._globals.buffers.mat);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this._matArray);
 		this._program.use();

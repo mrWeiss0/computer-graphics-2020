@@ -1,7 +1,6 @@
 import {loadFile} from "./webgl2-utils/index.js";
 import {Game, InstancedRenderer} from "./engine/index.js";
 import {rocket} from "./engine/index.js";
-import "./engine/webgl-obj-loader.min.js";
 
 const DEBUG = true;
 
@@ -19,15 +18,11 @@ function createCanvas(parentElement) {
 async function init(game) {
 	const programLoader = game.getProgramLoader();
 	await programLoader.loadFromJSON("programs.json");
-	game.glContext.flush();
-	// TODO move meshes in json
-	const meshes = await Promise.all(["assets/models/R27-Ready.obj", "assets/models/R73-Ready.obj"].map(name => loadFile(name)
-		.then(response => response.text())
-		.then(text => new OBJ.Mesh(text))));
-	for(const mesh of meshes) {
-		OBJ.initMeshBuffers(game.glContext, mesh);
-		game.rockets.addRenderer(new InstancedRenderer(game.globals, mesh));
-	}
+	const rf = game.getRendererFactory();
+	rf.setDefaultColor([255,0,0]);
+	const models = await loadFile("models.json").then(response => response.json());
+	for(const {mesh, texture} of models.rockets)
+		game.rockets.addRenderer(await rf.createRenderer(InstancedRenderer, mesh, texture, models.path));
 	// Test
 	const renderers = game.rockets.renderers;
 	let rockets = [
@@ -40,22 +35,22 @@ async function init(game) {
 		rocket._rspe = 3;
 		rocket.launch();
 	}
-	
 	game.globals.camera.position(30, 20, 5);
 	
 	if(DEBUG) {
-		programLoader.checkShaders();
-		programLoader.checkPrograms();
-		const err = programLoader.validatePrograms();
+		await programLoader.checkShaders();
+		await programLoader.checkPrograms();
+		const err = await programLoader.validatePrograms();
 		if(err)
 			throw new Error(err + " programs failed to validate");
 	}
 	programLoader.deleteShaders();
-	
+
 	const program = game.getProgram("main");
 	program.queryAttributes();
 	program.queryUniforms();
 	program.queryUniformBlocks();
+	await rf.initMeshBuffers();
 	for(const rend of renderers) {
 		rend.program = program;
 		rend.initVAO();

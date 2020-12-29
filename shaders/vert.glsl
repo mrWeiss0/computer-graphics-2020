@@ -16,9 +16,11 @@ in  mat3 a_normmat;
 
 out vec3 v_pos;
 out vec3 v_norm;
+out vec2 v_texcoord;
 
 void main() {
 	v_norm = a_normmat * a_normal;
 	v_pos  = vec3(a_objmat * a_position);
+	v_texcoord  = a_texcoord;
 	gl_Position = u_projmat * a_objmat * a_position;
 }

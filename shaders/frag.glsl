@@ -3,9 +3,12 @@ precision highp float;
 
 in  vec3 v_pos;
 in  vec3 v_norm;
+in  vec2 v_texcoord;
+
+uniform sampler2D tex;
 
 out vec4 outColor;
 
 void main() {
-	outColor = vec4(normalize(v_norm) / 2. + .5, 1);
+	outColor = texture(tex, v_texcoord);
 }

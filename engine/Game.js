@@ -1,4 +1,4 @@
-import {utils, rocket, Globals} from "./index.js";
+import {utils, rocket, Globals, RendererFactory} from "./index.js";
 const Mat4 = utils.matrix.Mat4;
 
 export class Game extends utils.App {
@@ -24,6 +24,10 @@ export class Game extends utils.App {
 		glContext.enable(glContext.DEPTH_TEST);
 
 		this.rockets = new rocket.RocketGroup(this.globals);
+	}
+
+	getRendererFactory() {
+		return new RendererFactory(this.globals);
 	}
 
 	autoResize() {
