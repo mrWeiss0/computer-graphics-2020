@@ -1,8 +1,8 @@
-import {utils, rocket, Globals, RendererFactory} from "./index.js";
+import {utils, Globals, RendererFactory} from "./index.js";
 const Mat4 = utils.matrix.Mat4;
 
 export class Game extends utils.App {
-	constructor(canvas, {INSTANCED_BUFSIZE = 1, MAX_LIGHTS = 1, LIGHTS_BIND = 0} = {}) {
+	constructor(canvas, {INSTANCED_BUFSIZE = 1, MAX_LIGHTS = 1} = {}) {
 		super(canvas);
 		
 		this.initMouse();
@@ -14,16 +14,13 @@ export class Game extends utils.App {
 		this.globals.addBuffer("mat", INSTANCED_BUFSIZE, 16 + 9, 4, glContext.ARRAY_BUFFER);
 		this.globals.addBuffer("lights", MAX_LIGHTS + 1,      4, 4, glContext.UNIFORM_BUFFER);
 		const lightsBuf = this.globals.buffers.lights;
-		lightsBuf.bindingPoint = LIGHTS_BIND;
+		lightsBuf.bindingPoint = 0;
 		glContext.bindBufferBase(glContext.UNIFORM_BUFFER, lightsBuf.bindingPoint, this.globals.buffers.lights);
 
-		addEventListener("resize", () => this.autoResize());
 		this.autoResize();
 
 		glContext.clearColor(0, 0, 0, 0);
 		glContext.enable(glContext.DEPTH_TEST);
-
-		this.rockets = new rocket.RocketGroup(this.globals);
 	}
 
 	getRendererFactory() {
@@ -40,11 +37,11 @@ export class Game extends utils.App {
 	draw() {
 		let gl = this.glContext;
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		this.rockets.draw();
+		this.globals.rockets.draw();
 	}
 	
 	update(dt) {
 		this.globals.camera.update(dt);
-		this.rockets.update(dt);
+		this.globals.rockets.update(dt);
 	}
 }

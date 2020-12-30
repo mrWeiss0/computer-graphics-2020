@@ -6,14 +6,22 @@ export class RendererFactory {
 		this.globals  = globals;
 		this.meshes   = new Map();
 		this.textures = new Map();
-		this.defColor = new Uint8Array(3);
+		this.color    = new Uint8Array(3);
 	}
 
-	async createRenderer(rendererClass, meshFile, textureFile, path="") {
+	async createRenderer(rendererClass, meshFile, textureFile, path="", color) {
 		const mesh = await this._getMesh(path + meshFile);
 		const rend = new rendererClass(this.globals, mesh);
-		if(textureFile != null)
-			rend.texture = this._getTexture(path + textureFile);
+		if(textureFile != null) {
+			let oldColor;
+			if(color != null) {
+				oldColor = [...this.color];
+				this.setColor(color);
+			}
+			rend.texture = this._getTexture(path + textureFile, color);
+			if(color != null)
+				this.setColor(oldColor);
+		}
 		return rend;
 	}
 
@@ -23,8 +31,56 @@ export class RendererFactory {
 			OBJ.initMeshBuffers(this.globals.glContext, mesh);
 	}
 
-	setDefaultColor(color) {
-		this.defColor.set(color);
+	setColor(color) {
+		try { this.color.set(color); }
+		catch(e) { throw new Error("Invalid color " + color); }
+	}
+
+	/*
+	 * Load a json from url and uses it to load the models.
+	 * calling loadFromObject method
+	 */
+	async loadFromJSON(url, classMap) {
+		const response = await utils.loadFile(url);
+		const json = await response.json();
+		return await this.loadFromObject(json, classMap);
+	}
+
+	/*
+	 * Load meshes and textures from an object with the following structure:
+	 * {
+	 *   class1 : {
+	 *     path   : "path/to/models",
+	 *     color  : [ 255, 255, 0 ], // optional default color
+	 *     models : [ { mesh : "rocket1/mesh.obj", texture : "rocket1/texture.png" }, ... ]
+	 *   },
+	 *   class2 : {
+	 *     ...
+	 *   },
+	 *   ...
+	 * }
+	 * classMap maps the models classes to a javascript class
+	 * { "class1" : RendererType1, "class2" : ..., ... }
+	 *
+	 * Returns a promise that resolves to an object with the following structure:
+	 * {
+	 *   class1 : [ RendererType1, ... ],
+	 *   class2 : [ ... ],
+	 *   ...
+	 * }
+	 */
+	async loadFromObject(obj, classMap) {
+		const loaded = {};
+		for(const key in classMap) {
+			const type = obj[key];
+			loaded[key] = Promise.all(type.models.map(
+				({ mesh, texture, color }) =>
+					this.createRenderer(classMap[key], mesh, texture, type.path, color || type.color)
+			));
+		}
+		for(const key in classMap)
+			loaded[key] = await loaded[key];
+		return loaded;
 	}
 
 	/*
@@ -58,7 +114,7 @@ export class RendererFactory {
 			gl.TEXTURE_2D, 0, gl.RGB,
 			1, 1, 0,
 			gl.RGB, gl.UNSIGNED_BYTE,
-			this.defColor);
+			this.color);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
 		gl.bindTexture(gl.TEXTURE_2D, null);

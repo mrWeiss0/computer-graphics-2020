@@ -1,13 +1,15 @@
 {
-	"path" : "assets/models/",
-	"rockets" : [
-		{
-			"mesh"    : "Rocket01/R27-Ready.obj",
-			"texture" : "Rocket01/R27 Texture.png"
-		},
-		{
-			"mesh"    : "Rocket02/R73-Ready.obj",
-			"texture" : "Rocket02/R73 Texture.png"
-		}
-	]
+	"rockets" : {
+		"path"   : "assets/models/",
+		"models" : [
+			{
+				"mesh"    : "Rocket01/R27-Ready.obj",
+				"texture" : "Rocket01/R27 Texture.png"
+			},
+			{
+				"mesh"    : "Rocket02/R73-Ready.obj",
+				"texture" : "Rocket02/R73 Texture.png"
+			}
+		]
+	}
 }

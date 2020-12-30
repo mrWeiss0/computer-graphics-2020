@@ -24,7 +24,7 @@ export class Rocket extends LinkedList {
 	constructor(globals, renderer) {
 		super();
 		this._globals  = globals;
-		this._rederer  = renderer;
+		this._renderer = renderer;
 		this._pos      = new matrix.Vec3(0);
 		// Rotation around its axis
 		this._roll     = 0;
@@ -145,7 +145,7 @@ export class Rocket extends LinkedList {
 	}
 
 	draw() {
-		this._rederer.draw(this);
+		this._renderer.draw(this);
 	}
 	
 	/* Update the accelerating components */

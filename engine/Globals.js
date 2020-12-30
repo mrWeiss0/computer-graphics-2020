@@ -1,5 +1,5 @@
 
-import {utils, Camera} from "./index.js";
+import {utils, rocket, Camera} from "./index.js";
 const Mat4 = utils.matrix.Mat4;
 
 export class Globals {
@@ -9,7 +9,8 @@ export class Globals {
 		this.buffers = {};
 		this.projMatrix = Mat4.identity;
 
-		this.camera = new Camera();
+		this.camera  = new Camera();
+		this.rockets = new rocket.RocketGroup(this);
 	}
 
 	get viewMatrix() {
