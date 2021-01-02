@@ -60,4 +60,13 @@ export class Renderer {
 
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, frenchMesh.indexBuffer);
 	}
+
+	draw(obj) {}
+
+	flush() {
+		const gl = this._globals.glContext;
+		this._program.use();
+		gl.bindVertexArray(this._vao);
+		gl.bindTexture(gl.TEXTURE_2D, this._tex);
+	}
 }

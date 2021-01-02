@@ -70,14 +70,12 @@ export class InstancedRenderer extends Renderer {
 
 	/* Render all pending objects */
 	flush() {
+		super.flush();
+		
 		const gl = this._globals.glContext;
-
-		gl.bindVertexArray(this._vao);
-		gl.bindTexture(gl.TEXTURE_2D, this._tex);
+		gl.uniformMatrix4fv(this._program.getUniformLocation("u_projmat"), false, this._globals.projMatrix.val)
 		gl.bindBuffer(gl.ARRAY_BUFFER, this._globals.buffers.mat);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this._matArray);
-		this._program.use();
-		gl.uniformMatrix4fv(this._program.getUniformLocation("u_projmat"), false, this._globals.projMatrix.val)
 
 		gl.drawElementsInstanced(
 			gl.TRIANGLES,

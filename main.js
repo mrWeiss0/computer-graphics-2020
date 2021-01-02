@@ -1,6 +1,5 @@
 import {loadFile} from "./webgl2-utils/index.js";
-import {Game, InstancedRenderer} from "./engine/index.js";
-import {rocket} from "./engine/index.js";
+import {Game, renderer, rocket} from "./engine/index.js";
 
 const DEBUG = true;
 
@@ -44,7 +43,7 @@ async function main() {
 
 	const rf = game.getRendererFactory();
 	rf.setColor([255, 0, 0]);
-	const models = rf.loadFromJSON("models.json", {rockets : InstancedRenderer}).then(models => {
+	const models = rf.loadFromJSON("models.json", {rockets : renderer.InstancedRenderer}).then(models => {
 		for(const r of models.rockets) {
 			game.globals.rockets.addRenderer(r);
 		}

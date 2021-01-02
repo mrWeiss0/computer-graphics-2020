@@ -1,4 +1,4 @@
-import {utils, Globals, RendererFactory} from "./index.js";
+import {utils, Globals, renderer} from "./index.js";
 const Mat4 = utils.matrix.Mat4;
 
 export class Game extends utils.App {
@@ -24,7 +24,7 @@ export class Game extends utils.App {
 	}
 
 	getRendererFactory() {
-		return new RendererFactory(this.globals);
+		return new renderer.RendererFactory(this.globals);
 	}
 
 	autoResize() {
