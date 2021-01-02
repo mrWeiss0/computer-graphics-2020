@@ -1,32 +1,30 @@
+import {Surface, utils} from "./index.js";
+const Vec3 = utils.matrix.Vec3;
+
 const FLOOR_HITBOX = 78;
 
 export class CollisionGrid {
-	constructor(minX, maxX, minZ, maxZ, cellLenX, cellLenZ) {
+	constructor(minX, minZ, maxX, maxZ, cellLenX, cellLenZ) {
 		this.offset  = [  0 - minX,  0 - minZ ];
 		this.cellLen = [ +cellLenX, +cellLenZ ];
 		const len    = [ maxX - minX, maxZ - minZ ];
 		this.nCells  = [ Math.ceil(len[0] / this.cellLen[0]),
 		                 Math.ceil(len[1] / this.cellLen[1]) ];
-		this.grid       = Array.from({length : this.nCells[0] * this.nCells[1]}, () => []);
-		this.geometries = [];
+		this.grid    = Array.from({length : this.nCells[0] * this.nCells[1]}, () => []);
 	}
 
-	addGeometry(frenchMesh) {
-		const geometry = {
-			mesh   : frenchMesh,
-			planes : new Array(Math.floor(this.mesh.indices.length / 3))
-		};
-		for(let i = 0; i < planes.length; i++) {
-			const floor = new Floor(geometry, i);
-			const vert = floor.vertices;
-			geometry.planes[i] = _planeFromTriangle(vert);
+	addGeometry(mesh, transform) {
+		for(let s = 0; s < mesh.indices.length - 2; s += 3) {
+			const [a, b, c] = _getTriangle(mesh, s);
+			const surf = new Surface(a, b, c);
+			if(transform != null)
+				surf.transform(transform);
 			// Check if floor, wall or ceiling
 			// (Only floors are considered)
-			if(floor.normal.y <= 0)
+			if(surf.normal.y <= 0)
 				continue;
-			this._addTriangle(vert, floor);
+			this._addTriangle(surf);
 		}
-		this.geometries.push(geometry);
 	}
 
 	/*
@@ -47,7 +45,7 @@ export class CollisionGrid {
 			return found;
 		const floorList = this._getCellList(i, j);
 		
-		for (let floor of floorList) {
+		for (const floor of floorList) {
 			const [a, b, c] = floor.vertices;
 			// Check that the point is within the triangle bounds.
 			if ((a.z - z) * (b.x - a.x) - (a.x - x) * (b.z - a.z) < 0)
@@ -70,13 +68,13 @@ export class CollisionGrid {
 		return found;
 	}
 
-	_addTriangle([a, b, c], floor) {
-		const [ fromX, fromZ ] = this._findCell(Math.min(a.x, b.x, c.x), Math.min(a.z, b.z, c.z));
-		const [   toX,   toZ ] = this._findCell(Math.max(a.x, b.x, c.x), Math.max(a.z, b.z, c.z));
+	_addSurface(s) {
+		const [ fromX, fromZ ] = this._findCell(Math.min(s.a.x, s.b.x, s.c.x), Math.min(s.a.z, s.b.z, s.c.z));
+		const [   toX,   toZ ] = this._findCell(Math.max(s.a.x, s.b.x, s.c.x), Math.max(s.a.z, s.b.z, s.c.z));
 
 		for (let i = fromX; i <= toX; i++)
 			for (let j = fromZ; j <= toZ; j++)
-				this._getCellList(i, j).push(floor);
+				this._getCellList(i, j).push(s);
 	}
 
 	_findCell(x, z) {
@@ -94,8 +92,13 @@ export class CollisionGrid {
 	}
 }
 
-function _planeFromTriangle([a, b, c]) {
-	const n = b.sub(a).cross(c.sub(a));
-	const d = -n.mul(a);
-	return [n, d];
+function _getTriangle(mesh, id) {
+	const ver = mesh.vertices;
+	const ind = mesh.indices;
+	const triang = new Array(3);
+	for(let v = 0; v < 3; v++) {
+		const t = ind[id + v] * 3;
+		vert[j] = new Vec3(ver[t + 0], ver[t + 1], ver[t + 2]);
+	}
+	return triang;
 }
