@@ -1,7 +1,8 @@
 export class Surface {
 	constructor(a, b, c) {
 		this._vert = [a, b, c];
-		this._update();
+		this._n  = b.sub(a).cross(c.sub(a)).normalized();
+		this._oo = -this._n.mul(this.a);
 	}
 
 	get a() {
@@ -26,20 +27,5 @@ export class Surface {
 
 	get offset() {
 		return this._oo;
-	}
-
-	transform(matrix) {
-		for(let i = 0; i < 3; i++) {
-			const v = matrix.mul(new Vec4(this._vert[i], 1));
-			this._vert[i].x = v.x;
-			this._vert[i].y = v.y;
-			this._vert[i].z = v.z;
-		}
-		this._update();
-	}
-
-	_update() {
-		this._n  =  this.b.sub(this.a).cross(this.c.sub(this.a));
-		this._oo = -this._n.mul(this.a);
 	}
 }

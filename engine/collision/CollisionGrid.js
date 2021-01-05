@@ -1,10 +1,11 @@
 import {Surface, utils} from "./index.js";
 const Vec3 = utils.matrix.Vec3;
+const Vec4 = utils.matrix.Vec4;
 
 const FLOOR_HITBOX = 78;
 
 export class CollisionGrid {
-	constructor(minX, minZ, maxX, maxZ, cellLenX, cellLenZ) {
+	constructor([minX, minZ, maxX, maxZ], [cellLenX, cellLenZ]) {
 		this.offset  = [  0 - minX,  0 - minZ ];
 		this.cellLen = [ +cellLenX, +cellLenZ ];
 		const len    = [ maxX - minX, maxZ - minZ ];
@@ -15,15 +16,13 @@ export class CollisionGrid {
 
 	addGeometry(mesh, transform) {
 		for(let s = 0; s < mesh.indices.length - 2; s += 3) {
-			const [a, b, c] = _getTriangle(mesh, s);
+			const [a, b, c] = _getTriangle(mesh, s, transform);
 			const surf = new Surface(a, b, c);
-			if(transform != null)
-				surf.transform(transform);
 			// Check if floor, wall or ceiling
 			// (Only floors are considered)
 			if(surf.normal.y <= 0)
 				continue;
-			this._addTriangle(surf);
+			this._addSurface(surf);
 		}
 	}
 
@@ -57,7 +56,7 @@ export class CollisionGrid {
 
 			const n  = floor.normal;
 			const oo = floor.offset;
-			const height = (n.x * x + n.z * z + oo) / n.y;
+			const height = -(n.x * x + n.z * z + oo) / n.y;
 			if (y - height + FLOOR_HITBOX < 0)
 				continue;
 
@@ -72,9 +71,15 @@ export class CollisionGrid {
 		const [ fromX, fromZ ] = this._findCell(Math.min(s.a.x, s.b.x, s.c.x), Math.min(s.a.z, s.b.z, s.c.z));
 		const [   toX,   toZ ] = this._findCell(Math.max(s.a.x, s.b.x, s.c.x), Math.max(s.a.z, s.b.z, s.c.z));
 
+		let oob = 0;
 		for (let i = fromX; i <= toX; i++)
 			for (let j = fromZ; j <= toZ; j++)
-				this._getCellList(i, j).push(s);
+				if(this._outOfBounds(i, j))
+					oob++;
+				else
+					this._getCellList(i, j).push(s);
+		if(oob)
+			console.warn("Surface out of bounds");
 	}
 
 	_findCell(x, z) {
@@ -92,13 +97,20 @@ export class CollisionGrid {
 	}
 }
 
-function _getTriangle(mesh, id) {
+function _getTriangle(mesh, id, transform) {
 	const ver = mesh.vertices;
 	const ind = mesh.indices;
 	const triang = new Array(3);
-	for(let v = 0; v < 3; v++) {
-		const t = ind[id + v] * 3;
-		vert[j] = new Vec3(ver[t + 0], ver[t + 1], ver[t + 2]);
-	}
+	if(transform)
+		for(let v = 0; v < 3; v++) {
+			const t = ind[id + v] * 3;
+			const v4 = transform.mul(new Vec4(ver[t + 0], ver[t + 1], ver[t + 2], 1));
+			triang[v] = new Vec3(v4.x, v4.y, v4.z);
+		}
+	else
+		for(let v = 0; v < 3; v++) {
+			const t = ind[id + v] * 3;
+			triang[v] = new Vec3(ver[t + 0], ver[t + 1], ver[t + 2]);
+		}
 	return triang;
 }

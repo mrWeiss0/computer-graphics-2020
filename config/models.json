@@ -1,0 +1,24 @@
+{
+	"rockets" : {
+		"path"   : "assets/models/rockets/",
+		"models" : [
+			{
+				"mesh"    : "rocket01/R27-Ready.obj",
+				"texture" : "rocket01/R27 Texture.png"
+			},
+			{
+				"mesh"    : "rocket02/R73-Ready.obj",
+				"texture" : "rocket02/R73 Texture.png"
+			}
+		]
+	},
+	"terrains" : {
+		"path"   : "assets/models/terrains/",
+		"models" : [
+			{
+				"mesh"    : "original/mount.obj",
+				"texture" : "original/ground_grass_3264_4062_Small.jpg"
+			}
+		]
+	}
+}

@@ -1,5 +1,6 @@
 import {loadFile} from "./webgl2-utils/index.js";
-import {Game, renderer, rocket} from "./engine/index.js";
+import {Game} from "./engine/index.js";
+import {Rocket} from "./engine/rocket/index.js";
 
 const DEBUG = true;
 
@@ -16,11 +17,11 @@ function createCanvas(parentElement) {
 
 function test(game) {
 	// Test
-	const renderers = game.globals.rockets.renderers;
+	const renderers = game.getRendererList("rockets");
 	let rockets = [
-		new rocket.Rocket(game.globals, renderers[0]).position(-80, -20,  0).trajectory([40,  0, 0], 10, 10),
-		new rocket.Rocket(game.globals, renderers[0]).position(-20, -10, 10).trajectory([10, 10, 5], 10, 15),
-		new rocket.Rocket(game.globals, renderers[1]).position(-20, -10, 10).trajectory([20, 10, 0], 15,  5)
+		new Rocket(game.globals, renderers[0]).position(-80, -20,  0).trajectory([40,  0, 0], 10, 10),
+		new Rocket(game.globals, renderers[0]).position(-20, -10, 10).trajectory([10, 10, 5], 10, 15),
+		new Rocket(game.globals, renderers[1]).position(-20, -10, 10).trajectory([20, 10, 0], 15,  5)
 	];
 	for(const rocket of rockets) {
 		game.globals.rockets.addRocket(rocket);
@@ -34,20 +35,15 @@ async function main() {
 	const canvas = createCanvas(document.body);
 	canvas.focus();
 
-	const config = await loadFile("config.json");
+	const config = await loadFile("config/config.json").then(r => r.json());
 	const game = new Game(canvas, config);
 	addEventListener("resize", () => game.autoResize());
 
 	const pl = game.getProgramLoader();
-	const programs = pl.loadFromJSON("programs.json");
-
-	const rf = game.getRendererFactory();
-	rf.setColor([255, 0, 0]);
-	const models = rf.loadFromJSON("models.json", {rockets : renderer.InstancedRenderer}).then(models => {
-		for(const r of models.rockets) {
-			game.globals.rockets.addRenderer(r);
-		}
-	});
+	const programs = pl.loadFromJSON("config/programs.json");
+	await game.modelLoader.loadModelsJSON("config/models.json");
+	await game.modelLoader.loadMapDataJSON("config/terrains.json");
+	await programs;
 
 	if(DEBUG) {
 		pl.checkShaders();
@@ -58,18 +54,19 @@ async function main() {
 	}
 	pl.deleteShaders();
 
-	await programs;
 	const program = game.getProgram("main");
 	program.queryAttributes();
 	program.queryUniforms();
 	program.queryUniformBlocks();
-	await models;
-	await rf.initMeshBuffers();
-	for(const rend of game.globals.rockets.renderers) {
+	for(const rend of game.getRendererList("rockets")) {
 		rend.program = program;
 		rend.initVAO();
 	}
 	program.uniformBlockBinding("u_lights", game.globals.buffers.lights.bindingPoint);
+	for(const rend of game.getRendererList("terrains")) {
+		rend.program = program;
+		rend.initVAO();
+	}
 
 	game.run();
 

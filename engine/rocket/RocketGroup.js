@@ -5,7 +5,6 @@ export class RocketGroup {
 	constructor(globals) {
 		this._globals      = globals;
 		this._rocketsList  = null;
-		this._renderers    = [];
 		const lightsBuffer = this._globals.buffers.lights;
 		if(lightsBuffer) {
 			this._lightsArray = new Float32Array(lightsBuffer.itemSize * (lightsBuffer.numItems - 1));
@@ -29,14 +28,6 @@ export class RocketGroup {
 		this._rocketsList = rocket;
 	}
 
-	addRenderer(renderer) {
-		this._renderers.push(renderer);
-	}
-
-	get renderers() {
-		return this._renderers;
-	}
-
 	//TODO collisions
 	update(dt) {
 		let prev = null;
@@ -58,8 +49,6 @@ export class RocketGroup {
 			this._updateLights();
 		for(const rocket of this)
 			rocket.draw();
-		for(const rend of this._renderers)
-			rend.flush();
 	}
 
 	[Symbol.iterator] = function* () {

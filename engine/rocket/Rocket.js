@@ -114,7 +114,7 @@ export class Rocket extends LinkedList {
 	/* Get the world transform matrix */
 	get worldMatrix() {
 		if(this._wrldMat == null)
-			this._wrldMat = matrix.Mat4.transl(...this._pos.val)
+			this._wrldMat = matrix.Mat4.transl(...this._pos)
 			           .mul(this._pitchyaw)
 			           .mul(matrix.Mat4.rotZ(this._roll))
 			           .mul(matrix.Mat4.scale(this._hvscale[0], this._hvscale[0], this._hvscale[1]));

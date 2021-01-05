@@ -1,5 +1,6 @@
 
-import {utils, rocket, Camera} from "./index.js";
+import {utils, Camera} from "./index.js";
+import {RocketGroup} from "./rocket/index.js";
 const Mat4 = utils.matrix.Mat4;
 
 export class Globals {
@@ -8,9 +9,9 @@ export class Globals {
 		this.gravity = 10;
 		this.buffers = {};
 		this.projMatrix = Mat4.identity;
-
+		this.collision = null;
 		this.camera  = new Camera();
-		this.rockets = new rocket.RocketGroup(this);
+		this.rockets = new RocketGroup(this);
 	}
 
 	get viewMatrix() {
@@ -25,5 +26,9 @@ export class Globals {
 		buffer.itemSize = itemSize;
 		glContext.bindBuffer(target, buffer);
 		glContext.bufferData(target, byteSize * buffer.itemSize * buffer.numItems, glContext.DYNAMIC_DRAW);
+	}
+
+	addCollisionGeo() {
+
 	}
 }

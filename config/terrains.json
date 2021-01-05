@@ -1,0 +1,15 @@
+{
+	"cellsize" : [10, 10],
+	"bounds" : [-50, -50, 50, 50],
+	"list" : [
+		{
+			"modelName"  : "terrains",
+			"modelIndex" : 0,
+			"collidable" : true,
+			"position"   : [0, 0, 0],
+			"rotation"   : [0, 0, 0],
+			"order"      : "XZY",
+			"scale"      : [5]
+		}
+	]
+}
