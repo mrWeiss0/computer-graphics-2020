@@ -28,13 +28,11 @@ export class RocketGroup {
 		this._rocketsList = rocket;
 	}
 
-	//TODO collisions
 	update(dt) {
 		let prev = null;
 		for(const rocket of this) {
 			rocket.update(dt);
-			// TODO collisions
-			if(rocket._ttl <= 0) {
+			if(rocket._deleted) {
 				if(prev != null)
 					prev.next = rocket.next;
 				else

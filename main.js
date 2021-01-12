@@ -1,6 +1,5 @@
 import {loadFile} from "./webgl2-utils/index.js";
 import {Game} from "./engine/index.js";
-import {Rocket} from "./engine/rocket/index.js";
 
 const DEBUG = true;
 
@@ -13,22 +12,6 @@ function createCanvas(parentElement) {
 	canvas.tabIndex = 0;
 	parentElement.appendChild(canvas);
 	return canvas;
-}
-
-function test(game) {
-	// Test
-	const renderers = game.getRendererList("rockets");
-	let rockets = [
-		new Rocket(game.globals, renderers[0]).position(-80, -20,  0).trajectory([40,  0, 0], 10, 10),
-		new Rocket(game.globals, renderers[0]).position(-20, -10, 10).trajectory([10, 10, 5], 10, 15),
-		new Rocket(game.globals, renderers[1]).position(-20, -10, 10).trajectory([20, 10, 0], 15,  5)
-	];
-	for(const rocket of rockets) {
-		game.globals.rockets.addRocket(rocket);
-		rocket._rspe = 3;
-		rocket.launch();
-	}
-	game.globals.camera.position(30, 20, 5);
 }
 
 async function main() {
@@ -68,10 +51,8 @@ async function main() {
 		rend.initVAO();
 	}
 
+	game.globals.camera.position(10, 40, 100);
 	game.run();
-
-	// TEST
-	test(game);
 	
 	globalThis.game = game;
 }

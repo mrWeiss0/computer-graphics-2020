@@ -1,5 +1,6 @@
 import {utils, Globals, ModelLoader} from "./index.js";
 import {InstancedRenderer, Renderer} from "./renderer/index.js";
+import {Rocket} from "./rocket/index.js";
 const Mat4 = utils.matrix.Mat4;
 
 export class Game extends utils.App {
@@ -11,6 +12,7 @@ export class Game extends utils.App {
 		
 		this.initMouse();
 		this.mouse.hideMenu = true;
+		this.mouse.register(this);
 		this.initKeyboard();
 
 		const glContext = this.glContext;
@@ -32,6 +34,8 @@ export class Game extends utils.App {
 
 		glContext.clearColor(0, 0, 0, 0);
 		glContext.enable(glContext.DEPTH_TEST);
+
+		this._test = true;
 	}
 
 	get modelLoader() {
@@ -60,8 +64,20 @@ export class Game extends utils.App {
 		for(const t of this.terrains)
 			t.draw();
 	}
+
+	click(e) {
+		test(this);
+	}
 	
 	update(dt) {
+		if(this.keyboard.key("Space")) {
+			if(this._test) {
+				test(this);
+				this._test = false;
+			}
+		}
+		else
+			this._test = true;
 		this.globals.camera.update(dt);
 		this.globals.rockets.update(dt);
 	}
@@ -72,4 +88,24 @@ function createRendObject(...entries) {
 	for(const [name, clazz] of entries)
 		o[name] = { clazz : clazz, list : [] };
 	return o;
+}
+
+function test(game) {
+	const renderers = game.getRendererList("rockets");
+	const {height: height0} = game.globals.collision.findFloorHeight(-30, 10, 20);
+	const {height: height1} = game.globals.collision.findFloorHeight(-30, 10,-20);
+	const {height: height2} = game.globals.collision.findFloorHeight(-30, 10,  0);
+	const {height: height5} = game.globals.collision.findFloorHeight( 20,  0,  0);
+	let rockets = [
+		new Rocket(game.globals, renderers[0]).position(-30, height0, 20).trajectory([20,  height5,  0], 40,  10),
+		new Rocket(game.globals, renderers[0]).position(-30, height1,-20).trajectory([20,  height5,  0], 40,  10),
+		new Rocket(game.globals, renderers[1]).position(-30, height2,  0).trajectory([20,  height5,  0], 40,  10),
+		new Rocket(game.globals, renderers[1]).position(-30, height2,  0).trajectory([20,  height5,  0], 35,  10),
+		new Rocket(game.globals, renderers[1]).position(-30, height2,  0).trajectory([20,  height5,  0], 30,  10)
+	];
+	for(const rocket of rockets) {
+		game.globals.rockets.addRocket(rocket);
+		rocket._rspe = 3;
+		rocket.launch();
+	}
 }

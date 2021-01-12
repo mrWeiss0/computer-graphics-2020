@@ -2,6 +2,8 @@ import {utils} from "./index.js";
 const LinkedList = utils.LinkedList;
 const matrix = utils.matrix;
 
+const PITCH_ANI = 100;
+
 /*
  * Rocket class
  *
@@ -38,6 +40,7 @@ export class Rocket extends LinkedList {
 		// Acceleration and velocity XZ and Y components
 		this._hvacc    = new matrix.Vec2(0, 0);
 		this._hvvel    = new matrix.Vec2(0, 0);
+		this._pitch    = - Math.PI / 2;
 		// Horizontal and vertical scale
 		this._hvscale  = [1, 1];
 		this._wrldMat  = null;
@@ -81,7 +84,9 @@ export class Rocket extends LinkedList {
 		const r_aag1yh = Math.sqrt(aag1yh);
 		this._ttl      = this._timeout * (vacc + g + r_aag1yh) / g ;
 		const a2g      = vacc * 2 + g;
-		this._hvacc.x  = htg.modulo / hmax * aag * (a2g - 2 * r_aag1yh) / (a2g**2 - 4 * aag1yh);
+		const ifzero   = a2g - 2 * r_aag1yh;
+		const accx     = ifzero ? ifzero / (a2g**2 - 4 * aag1yh) : 1 / (2 * a2g);
+		this._hvacc.x  = htg.modulo / hmax * aag * accx;
 		this._hvacc.y  = vacc + g;
 		return this;
 	}
@@ -125,6 +130,13 @@ export class Rocket extends LinkedList {
 	update(dt) {
 		if(!this._launched)
 			return;
+		const pos_old = [...this._pos];
+		const {floor: floor0} = this._globals.collision.findFloorHeight(...pos_old);
+		// If out of bounds
+		if(floor0 == null) {
+			this._deleted = true;
+			return;
+		}
 		dt /= 1000;
 		// Invalid previous matrix
 		this._wrldMat = null;
@@ -142,6 +154,24 @@ export class Rocket extends LinkedList {
 		else
 			this._timeout -= dt;
 		this._updateAccel(dt);
+		const {floor, height} = this._globals.collision.findFloorHeight(...this._pos);
+		// If out of bounds
+		if(floor == null) {
+			this.position(...pos_old);
+			this._hvvel.x = 0;
+			this._hvacc.x = 0;
+			this._hvacc.y = 0;
+		}
+		// If floor collision warp up
+		if(this._pos.y < height) {
+			this._pos.y = height;
+			this._deleted = true;
+		}
+		const pitchTarget = - Math.PI / 2 - Math.atan2(...this._hvvel);
+			if(Math.abs(pitchTarget - this._pitch) > PITCH_ANI)
+				this._pitch += PITCH_ANI * Math.sign(pitchTarget - this._pitch);
+			else
+				this._pitch = pitchTarget;
 	}
 
 	draw() {
@@ -165,11 +195,6 @@ export class Rocket extends LinkedList {
 	 * looking in the direction of the trajectory
 	 */
 	get _pitchyaw() {
-		let pitch = this._hvvel;
-		if(!pitch.modulo)
-			pitch = new matrix.Vec2(this._hvacc.x, this._hvacc.y - this._globals.gravity);
-		if(!pitch.modulo)
-			return matrix.Mat4.rotX([0, -1]);
-		return matrix.Mat4.rotY([-this._hdir.x, -this._hdir.y]).mul(matrix.Mat4.rotX([-pitch.x/pitch.modulo, -pitch.y/pitch.modulo]));
+		return matrix.Mat4.rotY([-this._hdir.x, -this._hdir.y]).mul(matrix.Mat4.rotX(this._pitch));
 	}
 }

@@ -1,6 +1,6 @@
 {
-	"cellsize" : [10, 10],
-	"bounds" : [-50, -50, 50, 50],
+	"cellsize" : [5, 5],
+	"bounds" : [-40, -50, 40, 50],
 	"list" : [
 		{
 			"modelName"  : "terrains",
@@ -9,7 +9,7 @@
 			"position"   : [0, 0, 0],
 			"rotation"   : [0, 0, 0],
 			"order"      : "XZY",
-			"scale"      : [5]
+			"scale"      : [10]
 		}
 	]
 }
