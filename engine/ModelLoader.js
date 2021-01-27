@@ -182,6 +182,47 @@ export class ModelLoader {
 		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
+
+	_getCubemap(url, faces) {
+		url = new URL(url, document.baseURI).pathname;
+		if(this.textures.has(url))
+			return this.textures.get(url);
+
+		const gl = this.game.glContext;
+		const tex = gl.createTexture();
+		this.textures.set(url, tex);
+
+		Promise.all(faces.map((face)=>{
+			gl.bindTexture(gl.TEXTURE_CUBE_MAP, tex);
+			gl.texImage2D(
+				gl[face.target], 0, gl.RGB,
+				1, 1, 0,
+				gl.RGB, gl.UNSIGNED_BYTE,
+				null); //this.color); 
+			gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+			gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+			return this._loadCubeface(tex, url+face.texture, face.target);
+		})).then(()=>{
+			gl.bindTexture(gl.TEXTURE_CUBE_MAP, tex);
+			gl.generateMipmap(gl.TEXTURE_CUBE_MAP)
+		});
+		return tex;
+	}
+
+	async _loadCubeface(tex, url, target) {
+		const response = await utils.loadFile(url);
+		const blob = await response.blob();
+		const img = await createImageBitmap(blob);
+		console.log(url);
+		const gl = this.game.glContext;
+		gl.bindTexture(gl.TEXTURE_CUBE_MAP, tex);
+		gl.texImage2D(
+				gl[target], 0, gl.RGB,
+				gl.RGB, gl.UNSIGNED_BYTE,
+				img);
+		gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+	}
 }
 
 async function _loadMesh(url) {
