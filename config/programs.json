@@ -8,12 +8,24 @@
 		{
 			"type" : "FRAGMENT_SHADER",
 			"file" : "frag.glsl"
+		},
+		{
+			"type" : "VERTEX_SHADER",
+			"file" : "skybox_vert.glsl"
+		},
+		{
+			"type" : "FRAGMENT_SHADER",
+			"file" : "skybox_frag.glsl"
 		}
 	],
 	"programs" : [
 		{
 			"name"    :  "main",
 			"shaders" : [ "vert.glsl", "frag.glsl" ]
+		},
+		{
+			"name"    : "skybox",
+			"shaders"   : [ "skybox_vert.glsl", "skybox_frag.glsl" ]
 		}
 	]
 }
