@@ -1,0 +1,35 @@
+{
+	"path" : "assets/models/skyboxes/",
+	"mesh" : "skybox.obj",
+	"cubemaps" : [
+		{
+			"name"  : "miramar/",
+			"faces" : [
+				{
+					"target" : "TEXTURE_CUBE_MAP_NEGATIVE_X",
+					"texture": "left.jpg"
+				},
+				{
+					"target" : "TEXTURE_CUBE_MAP_POSITIVE_X",
+					"texture": "right.jpg"
+				},
+				{
+					"target" : "TEXTURE_CUBE_MAP_NEGATIVE_Z",
+					"texture": "front.jpg"
+				},
+				{
+					"target" : "TEXTURE_CUBE_MAP_POSITIVE_Z",
+					"texture": "back.jpg"
+				},
+				{
+					"target" : "TEXTURE_CUBE_MAP_NEGATIVE_Y",
+					"texture": "bottom.jpg"
+				},
+				{
+					"target" : "TEXTURE_CUBE_MAP_POSITIVE_Y",
+					"texture": "top.jpg"
+				}
+			]
+		}
+	]
+}
