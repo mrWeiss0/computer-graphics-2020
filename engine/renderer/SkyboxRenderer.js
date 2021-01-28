@@ -57,11 +57,13 @@ export class SkyboxRenderer {
 	}
 
 	draw(obj) {
-		const cameraRot = this._globals.viewMatrix.inverse();
-		cameraRot.set(3,0,0);
-		cameraRot.set(3,1,0);
-		cameraRot.set(3,2,0);
-		this._matArray.set(cameraRot.val, 0);
+		const camMatrix = this._globals.viewMatrix.inverse();
+		camMatrix.set(3,0,0);
+		camMatrix.set(3,1,0);
+		camMatrix.set(3,2,0);
+		const skyboxMatrix = camMatrix.mul(this._globals.projMatrix.inverse());
+		this._matArray.set(skyboxMatrix.val, 0);
+		
 		this.flush();
 	}
 
@@ -70,7 +72,7 @@ export class SkyboxRenderer {
 		this._program.use();
 		gl.bindVertexArray(this._vao);
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, this._tex);
-		gl.uniformMatrix4fv(this._program.getUniformLocation("u_cameraRot"), false, this._matArray);
+		gl.uniformMatrix4fv(this._program.getUniformLocation("u_viewDirProjInv"), false, this._matArray);
 
 		gl.drawElements(
 			gl.TRIANGLES,
