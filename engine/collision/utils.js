@@ -12,3 +12,13 @@ export function minMax(mesh) {
 
 	return [min, max];
 }
+
+export function linePlaneCollision(line, surface){
+    const x0 = line.point;
+    const dir = line.dir;
+    const n = surface.normal;
+    const point = surface.a;
+
+    const t = n.mul(point.sub(x0)) / n.mul(dir);
+    return line.pointFromT(t);
+}
