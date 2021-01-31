@@ -1,4 +1,4 @@
-import {Surface, utils} from "./index.js";
+import {Surface, utils, linePlaneCollision} from "./index.js";
 const Vec3 = utils.matrix.Vec3;
 const Vec4 = utils.matrix.Vec4;
 
@@ -65,6 +65,34 @@ export class CollisionGrid {
 			break;
 		}
 		return found;
+	}
+
+	rayCellCollision(ray, [i,j]){
+		let position = new Array(3);
+		if(this._outOfBounds(i, j))
+			return position;
+		const floorList = this._getCellList(i,j);
+
+		for(const floor of floorList){
+			// Find point of intersection between the ray and the plane of the triangle.
+			const collisionPoint = linePlaneCollision(line, floor);
+			const [x, y, z] = collisionPoint.val;
+
+			const [a, b, c] = floor.vertices;
+			// Check that the point is within the triangle bounds.
+			if ((a.z - z) * (b.x - a.x) - (a.x - x) * (b.z - a.z) < 0)
+				continue;
+			if ((b.z - z) * (c.x - b.x) - (b.x - x) * (c.z - b.z) < 0)
+				continue;
+			if ((c.z - z) * (a.x - c.x) - (c.x - x) * (a.z - c.z) < 0)
+				continue;
+
+			// Cucking? Hard to fix, as one would need 
+			// to choose the closest triangle to the camera
+			position = collisionPoint.val;
+			break;
+		}
+		return position;
 	}
 
 	_addSurface(s) {
