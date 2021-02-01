@@ -88,7 +88,7 @@ export class CollisionGrid {
 		return [i, j];
 	}
 
-	_getCellList(j, i) {
+	_getCellList(i, j) {
 		return this.grid[i + j * this.nCells[0]];
 	}
 
