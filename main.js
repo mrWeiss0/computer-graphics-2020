@@ -30,8 +30,8 @@ async function main() {
 	await programs;
 
 	if(DEBUG) {
-		pl.checkShaders();
-		pl.checkPrograms();
+		await pl.checkShaders();
+		await pl.checkPrograms();
 		const err = await pl.validatePrograms();
 		if(err)
 			throw new Error(err + " programs failed to validate");
