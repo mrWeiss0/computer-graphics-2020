@@ -1,6 +1,5 @@
 {
 	"path" : "assets/models/skyboxes/",
-	"mesh" : "skybox.obj",
 	"cubemaps" : [
 		{
 			"name"  : "miramar/",
