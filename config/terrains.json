@@ -11,5 +11,6 @@
 			"order"      : "XZY",
 			"scale"      : [10]
 		}
-	]
+	],
+	"skybox" : "miramar/"
 }

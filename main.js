@@ -25,6 +25,7 @@ async function main() {
 	const pl = game.getProgramLoader();
 	const programs = pl.loadFromJSON("config/programs.json");
 	await game.modelLoader.loadModelsJSON("config/models.json");
+	await game.modelLoader.loadSkyboxesJSON("config/skyboxes.json");
 	await game.modelLoader.loadMapDataJSON("config/terrains.json");
 	await programs;
 
@@ -49,6 +50,12 @@ async function main() {
 	for(const rend of game.getRendererList("terrains")) {
 		rend.program = program;
 		rend.initVAO();
+	}
+
+	const skyboxProg = game.getProgram("skybox");
+	skyboxProg.queryUniforms();
+	for(const skybox of game.skyboxes.values()) {
+		skybox.program = skyboxProg;
 	}
 
 	game.globals.camera.position(10, 40, 100);

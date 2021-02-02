@@ -29,11 +29,12 @@ export class Game extends utils.App {
 			[  "rockets", InstancedRenderer ],
 			[ "terrains",          Renderer ]
 		);
+		this.skyboxes = new Map();
+		this.activeSkybox = null;
 
 		this.autoResize();
 
 		glContext.clearColor(0, 0, 0, 0);
-		glContext.enable(glContext.DEPTH_TEST);
 
 		this._test = true;
 	}
@@ -58,6 +59,10 @@ export class Game extends utils.App {
 	draw() {
 		let gl = this.glContext;
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		gl.disable(gl.DEPTH_TEST);
+		gl.enable(gl.CULL_FACE);
+		this.activeSkybox.draw();
+		gl.enable(gl.DEPTH_TEST);
 		this.globals.rockets.draw();
 		for(const r of this.getRendererList("rockets"))
 			r.flush();

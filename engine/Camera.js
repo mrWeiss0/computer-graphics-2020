@@ -11,6 +11,7 @@ export class Camera {
 		this._pos.x = +x;
 		this._pos.y = +y;
 		this._pos.z = +z;
+		this._viewMat = null;
 	}
 
 	get viewMatrix() {

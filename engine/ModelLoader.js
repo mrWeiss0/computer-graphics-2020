@@ -1,7 +1,8 @@
-import {CollisionGrid, minMax} from "./collision/index.js";
-import {utils, Terrain} from "./index.js";
+import {CollisionGrid} from "./collision/index.js";
+import {utils, Terrain, renderer} from "./index.js";
 import "./webgl-obj-loader.min.js";
 const Mat4 = utils.matrix.Mat4;
+const SkyboxRenderer = renderer.SkyboxRenderer;
 
 export class ModelLoader {
 	constructor(game) {
@@ -27,6 +28,12 @@ export class ModelLoader {
 			if(color != null)
 				this.setColor(oldColor);
 		}
+		return rend;
+	}
+
+	createSkybox(url, faces) {
+		const rend = new SkyboxRenderer(this.game.globals);
+		rend.texture = this._getCubemap(url, faces);
 		return rend;
 	}
 
@@ -88,7 +95,7 @@ export class ModelLoader {
 		return await this.loadMapData(json);
 	}
 
-	async loadMapData({cellsize, bounds, list}) {
+	async loadMapData({cellsize, bounds, list, skybox}) {
 		const collis = new CollisionGrid(bounds, cellsize);
 		for(const {
 			modelName, modelIndex,
@@ -128,7 +135,21 @@ export class ModelLoader {
 			}
 		}
 		this.game.globals.collision = collis;
+		this.game.activeSkybox = this.game.skyboxes.get(skybox);
 		return;
+	}
+
+	async loadSkyboxesJSON(url) {
+		const response = await utils.loadFile(url);
+		const json = await response.json();
+		return await this.loadSkyboxes(json);
+	}
+
+	async loadSkyboxes({path, cubemaps}) {
+		for(const {name, faces} of cubemaps) {
+			const rend = this.createSkybox(path + name, faces);
+			this.game.skyboxes.set(name, rend);
+		}
 	}
 
 	/*
@@ -214,7 +235,6 @@ export class ModelLoader {
 		const response = await utils.loadFile(url);
 		const blob = await response.blob();
 		const img = await createImageBitmap(blob);
-		console.log(url);
 		const gl = this.game.glContext;
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, tex);
 		gl.texImage2D(
