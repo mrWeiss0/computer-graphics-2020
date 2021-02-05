@@ -39,4 +39,16 @@ export class Line {
             this._point.get(1)+t*this._dir.get(1),
             this._point.get(2)+t*this._dir.get(2));
     }
+
+    lineFromScreen(xNormScreen, yNormScreen, globals){
+        const viewMatrix = globals.viewMatrix;
+        const projMatrix = globals.projMatrix;
+    
+        const cameraPosWorld = new Vec3(globals.camera._pos);
+        const clipToWorld = projMatrix.mul(viewMatrix).inverse();
+        const cameraDirWorld4 = clipToWorld.mul(new Vec4(xNormScreen, yNormScreen, 1, 1));
+        const cameraDirWorld = new Vec3(cameraDirWorld4.x,cameraDirWorld4.y,cameraDirWorld4.z);
+    
+        new Line(cameraPosWorld, cameraDirWorld);
+    }
 }
