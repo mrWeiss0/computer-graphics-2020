@@ -1,39 +1,12 @@
-import {utils} from "./index.js";
-const ProgramWrapper = utils.program.ProgramWrapper;
+import {utils, AbstractRenderer} from "./index.js";
 const Mat3 = utils.matrix.Mat3;
 
-export class Renderer {
+export class Renderer extends AbstractRenderer {
 	constructor(globals, frenchMesh) {
-		this._globals    = globals;
+		super(globals);
 		this._frenchMesh = frenchMesh;
-		this._program    = null;
-		this._tex        = null;
 		this._vao        = this._globals.glContext.createVertexArray();
 		this._matArray   = new Float32Array(16 + 9);
-	}
-
-	/* Get the program in use */
-	get program() {
-		return this._program;
-	}
-	
-	/* Set the program in use */
-	set program(program) {
-		if(program instanceof ProgramWrapper && program.glContext == this._globals.glContext)
-			this._program = program;
-		else
-			throw new Error("Invalid Program");
-	}
-
-	get texture() {
-		return this._tex;
-	}
-
-	set texture(tex) {
-		if(tex instanceof WebGLTexture)
-			this._tex = tex;
-		else
-			throw new Error("Invalid Texture");
 	}
 
 	get mesh() {
