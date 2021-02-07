@@ -58,7 +58,7 @@ async function main() {
 		skybox.program = skyboxProg;
 	}
 
-	game.globals.camera.position(10, 40, 100);
+	game.globals.camera.position(10000, 6000, 8000);
 	game.run();
 	
 	globalThis.game = game;

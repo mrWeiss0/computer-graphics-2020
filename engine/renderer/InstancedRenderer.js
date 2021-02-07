@@ -70,6 +70,9 @@ export class InstancedRenderer extends Renderer {
 
 	/* Render all pending objects */
 	flush() {
+		if(this._count == 0)
+			return;
+		
 		const gl = this._globals.glContext;
 		this._program.use();
 		gl.bindVertexArray(this._vao);

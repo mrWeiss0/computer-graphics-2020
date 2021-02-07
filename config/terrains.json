@@ -1,15 +1,16 @@
 {
-	"cellsize" : [5, 5],
-	"bounds" : [-40, -50, 40, 50],
+	"cellsize" : [500, 500],
+	"bounds" : [-3500, -4500, 3500, 4500],
 	"list" : [
 		{
 			"modelName"  : "terrains",
 			"modelIndex" : 0,
+			"collisMesh" : "assets/models/terrains/original/collision.obj",
 			"collidable" : true,
 			"position"   : [0, 0, 0],
 			"rotation"   : [0, 0, 0],
 			"order"      : "XZY",
-			"scale"      : [10]
+			"scale"      : [1000]
 		}
 	],
 	"skybox" : "miramar/"

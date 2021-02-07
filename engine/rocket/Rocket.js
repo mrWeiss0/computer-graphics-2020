@@ -2,7 +2,8 @@ import {utils} from "./index.js";
 const LinkedList = utils.LinkedList;
 const matrix = utils.matrix;
 
-const PITCH_ANI = 100;
+const PITCH_ANI = .05;
+const TERM_VEL  = -2.5;
 
 /*
  * Rocket class
@@ -92,7 +93,7 @@ export class Rocket extends LinkedList {
 	}
 
 	/* Set the rocket size scale, return this */
-	scale(hs, vs) {
+	scale(hs, vs=hs) {
 		hs = +hs;
 		vs = +vs;
 		if(isNaN(hs) || isNaN(vs))
@@ -137,7 +138,6 @@ export class Rocket extends LinkedList {
 			this._deleted = true;
 			return;
 		}
-		dt /= 1000;
 		// Invalid previous matrix
 		this._wrldMat = null;
 		this._roll += this._rspe * dt;
@@ -183,6 +183,8 @@ export class Rocket extends LinkedList {
 		const g = this._globals.gravity;
 		this._hvvel.x += (this._hvacc.x    ) * dt;
 		this._hvvel.y += (this._hvacc.y - g) * dt;
+		if(this._hvvel.y < TERM_VEL)
+			this._hvvel.y = TERM_VEL;
 		const dh = this._hvvel.x * dt - (this._hvacc.x    ) / 2 * dt**2;
 		const dv = this._hvvel.y * dt - (this._hvacc.y - g) / 2 * dt**2;
 		this._pos.x += dh * this._hdir.y;

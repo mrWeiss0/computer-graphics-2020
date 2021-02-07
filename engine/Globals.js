@@ -6,7 +6,7 @@ const Mat4 = utils.matrix.Mat4;
 export class Globals {
 	constructor(glContext) {
 		this.glContext = glContext;
-		this.gravity = 10;
+		this.gravity = .001; // cm * ms^-2 [ g = 0.001]
 		this.buffers = {};
 		this.projMatrix = Mat4.identity;
 		this.collision = null;

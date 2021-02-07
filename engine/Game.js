@@ -2,13 +2,16 @@ import {utils, Globals, ModelLoader} from "./index.js";
 import {InstancedRenderer, Renderer} from "./renderer/index.js";
 import {Rocket} from "./rocket/index.js";
 const Mat4 = utils.matrix.Mat4;
+const [NEAR, FAR] = [50, 20000];
+
 
 export class Game extends utils.App {
 	constructor(canvas, {
 		INSTANCED_BUFSIZE = 1,
-		MAX_LIGHTS = 1
+		MAX_LIGHTS = 1,
+		TIMESTEP = 0
 	} = {}) {
-		super(canvas);
+		super(canvas, TIMESTEP);
 		
 		this.initMouse();
 		this.mouse.hideMenu = true;
@@ -52,7 +55,7 @@ export class Game extends utils.App {
 	autoResize() {
 		const [w, h] = [this.canvas.clientWidth, this.canvas.clientHeight];
 		this.resize(w, h);
-		this.globals.projMatrix = Mat4.perspFOV(Math.PI / 4, w / h, 1, 200);
+		this.globals.projMatrix = Mat4.perspFOV(Math.PI / 4, w / h, NEAR, FAR);
 		this.glContext.viewport(0, 0, this.canvas.width, this.canvas.height);
 	}
 
@@ -95,22 +98,37 @@ function createRendObject(...entries) {
 	return o;
 }
 
-function test(game) {
+function randRocket(game, havg = 3000) {
+	const acc = 2 ** (Math.random() * 2 - .5) * game.globals.gravity;
+	const h   = 1000 * (Math.random() * 2 - 1) + havg;
+
 	const renderers = game.getRendererList("rockets");
-	const {height: height0} = game.globals.collision.findFloorHeight(-30, 10, 20);
-	const {height: height1} = game.globals.collision.findFloorHeight(-30, 10,-20);
-	const {height: height2} = game.globals.collision.findFloorHeight(-30, 10,  0);
-	const {height: height5} = game.globals.collision.findFloorHeight( 20,  0,  0);
-	let rockets = [
-		new Rocket(game.globals, renderers[0]).position(-30, height0, 20).trajectory([20,  height5,  0], 40,  10),
-		new Rocket(game.globals, renderers[0]).position(-30, height1,-20).trajectory([20,  height5,  0], 40,  10),
-		new Rocket(game.globals, renderers[1]).position(-30, height2,  0).trajectory([20,  height5,  0], 40,  10),
-		new Rocket(game.globals, renderers[1]).position(-30, height2,  0).trajectory([20,  height5,  0], 35,  10),
-		new Rocket(game.globals, renderers[1]).position(-30, height2,  0).trajectory([20,  height5,  0], 30,  10)
-	];
+	const r = Math.random();
+	let rend;
+	if(r < .8)
+		rend = renderers[1];
+	else
+		rend = renderers[0];
+	
+	const x0 = 1000 * (Math.random() * 6 - 3);
+	const z0 = 1000 * (Math.random() * 8 - 4);
+	const {height : y0} = game.globals.collision.findFloorHeight(x0, Infinity, z0);
+
+	const x1 = 1000 * (Math.random() * 8 - 4);
+	const z1 = 1000 * (Math.random() * 10 - 5);
+	let {height : y1} = game.globals.collision.findFloorHeight(x1, Infinity, z1);
+	if(y1 == -Infinity) y1 = 0;
+
+	return new Rocket(game.globals, rend).position(x0, y0, z0).trajectory([x1, y1, z1], h, acc);
+}
+
+function test(game, count = 50) {
+	let rockets = [];
+	for(let i = 0; i < count; i++)
+		rockets.push(randRocket(game));
 	for(const rocket of rockets) {
-		game.globals.rockets.addRocket(rocket);
-		rocket._rspe = 3;
+		game.globals.rockets.addRocket(rocket.scale(50));
+		rocket._rspe = .003;
 		rocket.launch();
 	}
 }
