@@ -31,4 +31,6 @@ export class AbstractRenderer {
 		else
 			throw new Error("Invalid Texture");
 	}
+
+	initVAO() {}
 }

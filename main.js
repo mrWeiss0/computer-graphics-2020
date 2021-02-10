@@ -58,6 +58,14 @@ async function main() {
 		skybox.program = skyboxProg;
 	}
 
+	const billboardProg = game.getProgram("bill");
+	billboardProg.queryAttributes();
+	billboardProg.queryUniforms();
+	for(const rend of game.getRendererList("explosions")) {
+		rend.program = billboardProg;
+		rend.initVAO();
+	}
+
 	game.globals.camera.position(10000, 6000, 8000);
 	game.run();
 	

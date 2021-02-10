@@ -20,5 +20,17 @@
 				"texture" : "original/ground_grass_3264_4062_Small.jpg"
 			}
 		]
+	},
+	"explosions" : {
+		"path"   : "assets/billboards/",
+		"models" : [
+			{
+				"sheetWidth"  :   6,
+				"frameCount"  :  17,
+				"frameWidth"  :  90,
+				"frameHeigth" : 134,
+				"texture" : "explosion.png"
+			}
+		]
 	}
 }

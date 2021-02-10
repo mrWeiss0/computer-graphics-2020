@@ -1,6 +1,6 @@
 import { Camera } from "./Camera.js";
 import {utils, Globals, ModelLoader} from "./index.js";
-import {InstancedRenderer, Renderer} from "./renderer/index.js";
+import {InstancedRenderer, InstancedBillboardRenderer, BillboardRenderer, Renderer} from "./renderer/index.js";
 import {Rocket} from "./rocket/index.js";
 const Mat4 = utils.matrix.Mat4;
 const [NEAR, FAR] = [50, 20000];
@@ -8,8 +8,9 @@ const [NEAR, FAR] = [50, 20000];
 
 export class Game extends utils.App {
 	constructor(canvas, {
-		INSTANCED_BUFSIZE = 1,
-		MAX_LIGHTS = 1,
+		INSTANCED_BUFSIZE = 20,
+		BILLBOARD_BUFSIZE = 20,
+		MAX_LIGHTS = 10,
 		TIMESTEP = 0
 	} = {}) {
 		super(canvas, TIMESTEP);
@@ -22,8 +23,9 @@ export class Game extends utils.App {
 
 		const glContext = this.glContext;
 		this.globals = new Globals(this.glContext);
-		this.globals.addBuffer("mat", INSTANCED_BUFSIZE, 16 + 9, 4, glContext.ARRAY_BUFFER);
-		this.globals.addBuffer("lights", MAX_LIGHTS + 1,      4, 4, glContext.UNIFORM_BUFFER);
+		this.globals.addBuffer(   "mat", INSTANCED_BUFSIZE, 16 + 9, 4, glContext.ARRAY_BUFFER);
+		this.globals.addBuffer( "billb", BILLBOARD_BUFSIZE,      6, 4, glContext.ARRAY_BUFFER);
+		this.globals.addBuffer("lights",    MAX_LIGHTS + 1,      4, 4, glContext.UNIFORM_BUFFER);
 		const lightsBuf = this.globals.buffers.lights;
 		lightsBuf.bindingPoint = 0;
 		glContext.bindBufferBase(glContext.UNIFORM_BUFFER, lightsBuf.bindingPoint, this.globals.buffers.lights);
@@ -38,12 +40,17 @@ export class Game extends utils.App {
 			[  "rockets", InstancedRenderer ],
 			[ "terrains",          Renderer ]
 		);
+		this.billboardRends = createRendObject(
+			[  "explosions", /*Instanced*/BillboardRenderer ]
+		);
 		this.skyboxes = new Map();
 		this.activeSkybox = null;
 
 		this.autoResize();
 
 		glContext.clearColor(0, 0, 0, 0);
+		glContext.enable(glContext.CULL_FACE);
+		glContext.blendFunc(glContext.SRC_ALPHA, glContext.ONE_MINUS_SRC_ALPHA);
 
 		this._test = true;
 	}
@@ -55,7 +62,10 @@ export class Game extends utils.App {
 	}
 
 	getRendererList(name) {
-		return this.rends[name].list;
+		let t = this.rends[name] || this.billboardRends[name];
+		if(!t)
+			return null;
+		return t.list;
 	}
 
 	autoResize() {
@@ -68,8 +78,6 @@ export class Game extends utils.App {
 	draw() {
 		let gl = this.glContext;
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		gl.disable(gl.DEPTH_TEST);
-		gl.enable(gl.CULL_FACE);
 		this.activeSkybox.draw();
 		gl.enable(gl.DEPTH_TEST);
 		this.globals.rockets.draw();
@@ -77,6 +85,11 @@ export class Game extends utils.App {
 			r.flush();
 		for(const t of this.terrains)
 			t.draw();
+		gl.enable(gl.BLEND);
+		// TEST
+		this.getRendererList("explosions")[0].draw({target : [0,2500,0], anchor : [4], size : [1000,1000]});
+		gl.disable(gl.BLEND);
+		gl.disable(gl.DEPTH_TEST);
 	}
 
 	click(e) {

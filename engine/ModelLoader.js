@@ -9,10 +9,10 @@ export class ModelLoader {
 		this.game     = game;
 		this.meshes   = new Map();
 		this.textures = new Map();
-		this.color    = new Uint8Array(3);
+		this.color    = new Uint8Array([0, 0, 0, 1]);
 	}
 
-	async createRenderer(rendererClass, meshFile, textureFile, path="", color) {
+	async createRenderer(rendererClass, meshFile, textureFile, path="", color=null) {
 		const mesh = await this._getMesh(path + meshFile);
 		// init buffers once
 		if(mesh.vertexBuffer == null)
@@ -37,6 +37,16 @@ export class ModelLoader {
 		return rend;
 	}
 
+	createBillboard(rendererClass, textureFile, sheetWidth, frameCount, frameWidth, frameHeigth) {
+		const rend = new rendererClass(this.game.globals);
+		rend.texture = this._getTexture(textureFile);
+		rend.sheetWidth  = sheetWidth;
+		rend.frameCount  = frameCount;
+		rend.frameWidth  = frameWidth;
+		rend.frameHeigth = frameHeigth;
+		return rend;
+	}
+
 	setColor(color) {
 		try { this.color.set(color); }
 		catch(e) { throw new Error("Invalid color " + color); }
@@ -49,7 +59,9 @@ export class ModelLoader {
 	async loadModelsJSON(url) {
 		const response = await utils.loadFile(url);
 		const json = await response.json();
-		return await this.loadModels(json);
+		const p = this.loadModels(json);
+		await this.loadBillboards(json);
+		await p;
 	}
 
 	/*
@@ -67,13 +79,6 @@ export class ModelLoader {
 	 * }
 	 * classMap maps the models classes to a javascript class
 	 * { "class1" : RendererType1, "class2" : ..., ... }
-	 *
-	 * Returns a promise that resolves to an object with the following structure:
-	 * {
-	 *   class1 : [ RendererType1, ... ],
-	 *   class2 : [ ... ],
-	 *   ...
-	 * }
 	 */
 	async loadModels(obj) {
 		const rends = this.game.rends;
@@ -83,6 +88,20 @@ export class ModelLoader {
 			loaded[key] = type.models.map(
 				({ mesh, texture, color }) =>
 					this.createRenderer(rends[key].clazz, mesh, texture, type.path, color || type.color));
+		}
+		for(const key in rends) {
+			rends[key].list.push(...(await Promise.all(loaded[key])));
+		}
+	}
+
+	async loadBillboards(obj) {
+		const rends = this.game.billboardRends;
+		const loaded = {};
+		for(const key in rends) {
+			const type = obj[key];
+			loaded[key] = type.models.map(
+				({ texture, sheetWidth, frameCount, frameWidth, frameHeigth }) =>
+					this.createBillboard(rends[key].clazz, type.path + texture, sheetWidth, frameCount, frameWidth, frameHeigth))
 		}
 		for(const key in rends) {
 			rends[key].list.push(...(await Promise.all(loaded[key])));
@@ -179,9 +198,9 @@ export class ModelLoader {
 		this.textures.set(url, tex);
 		gl.bindTexture(gl.TEXTURE_2D, tex);
 		gl.texImage2D(
-			gl.TEXTURE_2D, 0, gl.RGB,
+			gl.TEXTURE_2D, 0, gl.RGBA,
 			1, 1, 0,
-			gl.RGB, gl.UNSIGNED_BYTE,
+			gl.RGBA, gl.UNSIGNED_BYTE,
 			this.color);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
@@ -197,8 +216,8 @@ export class ModelLoader {
 		const gl = this.game.glContext;
 		gl.bindTexture(gl.TEXTURE_2D, tex);
 		gl.texImage2D(
-				gl.TEXTURE_2D, 0, gl.RGB,
-				gl.RGB, gl.UNSIGNED_BYTE,
+				gl.TEXTURE_2D, 0, gl.RGBA,
+				gl.RGBA, gl.UNSIGNED_BYTE,
 				img);
 		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.bindTexture(gl.TEXTURE_2D, null);
