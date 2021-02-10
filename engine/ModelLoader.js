@@ -37,13 +37,12 @@ export class ModelLoader {
 		return rend;
 	}
 
-	createBillboard(rendererClass, textureFile, sheetWidth, frameCount, frameWidth, frameHeigth) {
+	createBillboard(rendererClass, textureFile, sheetWidth, sheetHeight, frameCount) {
 		const rend = new rendererClass(this.game.globals);
 		rend.texture = this._getTexture(textureFile);
-		rend.sheetWidth  = sheetWidth;
+		rend.sheetW_i    = 1 / sheetWidth;
+		rend.sheetH_i    = 1 / sheetHeight;
 		rend.frameCount  = frameCount;
-		rend.frameWidth  = frameWidth;
-		rend.frameHeigth = frameHeigth;
 		return rend;
 	}
 
@@ -100,8 +99,8 @@ export class ModelLoader {
 		for(const key in rends) {
 			const type = obj[key];
 			loaded[key] = type.models.map(
-				({ texture, sheetWidth, frameCount, frameWidth, frameHeigth }) =>
-					this.createBillboard(rends[key].clazz, type.path + texture, sheetWidth, frameCount, frameWidth, frameHeigth))
+				({ texture, sheetWidth, sheetHeight, frameCount }) =>
+					this.createBillboard(rends[key].clazz, type.path + texture, sheetWidth, sheetHeight, frameCount))
 		}
 		for(const key in rends) {
 			rends[key].list.push(...(await Promise.all(loaded[key])));

@@ -41,7 +41,7 @@ export class Game extends utils.App {
 			[ "terrains",          Renderer ]
 		);
 		this.billboardRends = createRendObject(
-			[  "explosions", /*Instanced*/BillboardRenderer ]
+			[  "explosions", InstancedBillboardRenderer ]
 		);
 		this.skyboxes = new Map();
 		this.activeSkybox = null;
@@ -53,6 +53,7 @@ export class Game extends utils.App {
 		glContext.blendFunc(glContext.SRC_ALPHA, glContext.ONE_MINUS_SRC_ALPHA);
 
 		this._test = true;
+		this.i = 0;
 	}
 
 	get modelLoader() {
@@ -87,7 +88,8 @@ export class Game extends utils.App {
 			t.draw();
 		gl.enable(gl.BLEND);
 		// TEST
-		this.getRendererList("explosions")[0].draw({target : [0,2500,0], anchor : [4], size : [1000,1000]});
+		this.getRendererList("explosions")[0].draw({target : [0,2500,0], anchor : 4, size : [900,1340], frameN : Math.floor(this.i+=.5) });
+		this.getRendererList("explosions")[0].flush();
 		gl.disable(gl.BLEND);
 		gl.disable(gl.DEPTH_TEST);
 	}

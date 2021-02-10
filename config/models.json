@@ -26,9 +26,8 @@
 		"models" : [
 			{
 				"sheetWidth"  :   6,
+				"sheetHeight" :   3,
 				"frameCount"  :  17,
-				"frameWidth"  :  90,
-				"frameHeigth" : 134,
 				"texture" : "explosion.png"
 			}
 		]
