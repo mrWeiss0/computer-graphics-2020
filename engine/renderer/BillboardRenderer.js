@@ -7,8 +7,21 @@ export class BillboardRenderer extends AbstractRenderer {
 		this.sheetW_i = 0;
 		this.sheetH_i = 0;
 		this.frameCount  = 0;
-		this._matArray   = new Float32Array(8);
+		this.anchor = 0;
+		this._matArray   = new Float32Array(7);
 		this._intArray   = new Int32Array(this._matArray.buffer);
+	}
+
+	get frameW() {
+		if(!this.texture.width)
+			return 0;
+		return this.texture.width * this.sheetW_i;
+	}
+
+	get frameH() {
+		if(!this.texture.height)
+			return 0;
+		return this.texture.height * this.sheetH_i;
 	}
 
 	draw(obj) {
@@ -18,6 +31,7 @@ export class BillboardRenderer extends AbstractRenderer {
 		this._matArray[3 + 2 + 0] = n * this.sheetW_i % 1;
 		this._matArray[3 + 2 + 1] = Math.floor(n * this.sheetW_i) * this.sheetH_i;
 		this._intArray[3 + 2 + 2] = obj.anchor;
+		console.log(n);
 		this.flush();
 	}
 
@@ -30,11 +44,10 @@ export class BillboardRenderer extends AbstractRenderer {
 		const target = program.getAttributeLocation("target");
 		const size = program.getAttributeLocation("size");
 		const foffs = program.getAttributeLocation("frameoffset");
-		const anchor = program.getAttributeLocation("anchor");
 		gl.vertexAttrib3fv(target, this._matArray.subarray(0, 0 + 3));
 		gl.vertexAttrib2fv(size,   this._matArray.subarray(3, 3 + 2));
 		gl.vertexAttrib2fv(foffs,  this._matArray.subarray(5, 5 + 2));
-		gl.vertexAttribI4i(anchor, this._intArray[7], 0, 0, 0);
+		gl.uniform1i(this._program.getUniformLocation("anchor"), this.anchor);
 		gl.uniform2f(program.getUniformLocation("framesize"), this.sheetW_i, this.sheetH_i);
 		gl.uniformMatrix4fv(program.getUniformLocation("u_v"), false, this._globals.viewMatrix);
 		gl.uniformMatrix4fv(program.getUniformLocation("u_pv"), false, this._globals.projMatrix.mul(this._globals.viewMatrix));

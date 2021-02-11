@@ -1,9 +1,10 @@
-import {utils} from "./index.js";
+import {utils, Explosion} from "./index.js";
 const LinkedList = utils.LinkedList;
 const matrix = utils.matrix;
 
 const PITCH_ANI = .05;
 const TERM_VEL  = -2.5;
+const EXPLS_SCALE = 5;
 
 /*
  * Rocket class
@@ -24,10 +25,11 @@ export class Rocket extends LinkedList {
 	/*
 	 * Create a rocket
 	 */
-	constructor(globals, renderer) {
+	constructor(globals, renderer, explosions) {
 		super();
 		this._globals  = globals;
 		this._renderer = renderer;
+		this._explosions = explosions;
 		this._pos      = new matrix.Vec3(0);
 		// Rotation around its axis
 		this._roll     = 0;
@@ -166,6 +168,7 @@ export class Rocket extends LinkedList {
 		if(this._pos.y < height) {
 			this._pos.y = height;
 			this._deleted = true;
+			this._globals.rockets.addExplosion(new Explosion(this._explosions[0], this._pos, this._hvscale[0] * EXPLS_SCALE));
 		}
 		const pitchTarget = - Math.PI / 2 - Math.atan2(...this._hvvel);
 			if(Math.abs(pitchTarget - this._pitch) > PITCH_ANI)

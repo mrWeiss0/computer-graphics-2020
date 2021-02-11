@@ -37,12 +37,13 @@ export class ModelLoader {
 		return rend;
 	}
 
-	createBillboard(rendererClass, textureFile, sheetWidth, sheetHeight, frameCount) {
+	createBillboard(rendererClass, textureFile, sheetWidth, sheetHeight, frameCount, anchor) {
 		const rend = new rendererClass(this.game.globals);
 		rend.texture = this._getTexture(textureFile);
 		rend.sheetW_i    = 1 / sheetWidth;
 		rend.sheetH_i    = 1 / sheetHeight;
 		rend.frameCount  = frameCount;
+		rend.anchor      = anchor;
 		return rend;
 	}
 
@@ -99,8 +100,8 @@ export class ModelLoader {
 		for(const key in rends) {
 			const type = obj[key];
 			loaded[key] = type.models.map(
-				({ texture, sheetWidth, sheetHeight, frameCount }) =>
-					this.createBillboard(rends[key].clazz, type.path + texture, sheetWidth, sheetHeight, frameCount))
+				({ texture, sheetWidth, sheetHeight, frameCount, anchor }) =>
+					this.createBillboard(rends[key].clazz, type.path + texture, sheetWidth, sheetHeight, frameCount, anchor))
 		}
 		for(const key in rends) {
 			rends[key].list.push(...(await Promise.all(loaded[key])));
@@ -212,12 +213,15 @@ export class ModelLoader {
 		const response = await utils.loadFile(url);
 		const blob = await response.blob();
 		const img = await createImageBitmap(blob, { imageOrientation: "flipY" });
+		tex.width = img.width;
+		tex.height = img.height;
 		const gl = this.game.glContext;
 		gl.bindTexture(gl.TEXTURE_2D, tex);
 		gl.texImage2D(
 				gl.TEXTURE_2D, 0, gl.RGBA,
 				gl.RGBA, gl.UNSIGNED_BYTE,
 				img);
+		img.close();
 		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
@@ -253,12 +257,15 @@ export class ModelLoader {
 		const response = await utils.loadFile(url);
 		const blob = await response.blob();
 		const img = await createImageBitmap(blob);
+		tex.width = img.width;
+		tex.height = img.height;
 		const gl = this.game.glContext;
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, tex);
 		gl.texImage2D(
 				gl[target], 0, gl.RGB,
 				gl.RGB, gl.UNSIGNED_BYTE,
 				img);
+		img.close();
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
 	}
 }

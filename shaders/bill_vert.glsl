@@ -20,11 +20,11 @@ int[] index = int[](
 uniform mat4 u_v;
 uniform mat4 u_pv;
 uniform vec2 framesize;
+uniform int anchor;
 
 in  vec3 target;
 in  vec2 size;
 in  vec2 frameoffset;
-in  int  anchor;
 
 out vec2 v_texcoord;
 

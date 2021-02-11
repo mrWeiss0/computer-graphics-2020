@@ -28,6 +28,7 @@
 				"sheetWidth"  :   6,
 				"sheetHeight" :   3,
 				"frameCount"  :  17,
+				"anchor"      :   4,
 				"texture" : "explosion.png"
 			}
 		]

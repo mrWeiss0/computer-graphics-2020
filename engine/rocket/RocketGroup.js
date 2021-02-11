@@ -1,3 +1,4 @@
+import { Explosion } from "./Explosion.js";
 import {utils} from "./index.js";
 const Vec4 = utils.matrix.Vec4;
 
@@ -5,6 +6,7 @@ export class RocketGroup {
 	constructor(globals) {
 		this._globals      = globals;
 		this._rocketsList  = null;
+		this._explsList    = null;
 		const lightsBuffer = this._globals.buffers.lights;
 		if(lightsBuffer) {
 			this._lightsArray = new Float32Array(lightsBuffer.itemSize * (lightsBuffer.numItems - 1));
@@ -28,25 +30,44 @@ export class RocketGroup {
 		this._rocketsList = rocket;
 	}
 
+	addExplosion(explosion) {
+		explosion.next = this._explsList;
+		this._explsList = explosion;
+	}
+
 	update(dt) {
+		this._rocketsList = this._updateList(this._rocketsList, dt);
+		this._explsList = this._updateList(this._explsList, dt);
+	}
+
+	_updateList(l, dt) {
+		if(l == null)
+			return null;
+		let newList = l;
 		let prev = null;
-		for(const rocket of this) {
-			rocket.update(dt);
-			if(rocket._deleted) {
+		for(const e of l) {
+			e.update(dt);
+			if(e._deleted) {
 				if(prev != null)
-					prev.next = rocket.next;
+					prev.next = e.next;
 				else
-					this._rocketsList = rocket.next;
-			} else
-				prev = rocket;
+					newList = e.next;
+			}
+			else
+				prev = e;
 		}
+		return newList;
 	}
 
 	draw() {
-		if(this._lightsArray)
-			this._updateLights();
 		for(const rocket of this)
 			rocket.draw();
+	}
+
+	drawExplosions() {
+		if(this._explsList != null)
+			for(const expls of this._explsList)
+				expls.draw();
 	}
 
 	[Symbol.iterator] = function* () {
@@ -55,7 +76,9 @@ export class RocketGroup {
 		yield* this._rocketsList;
 	}
 
-	_updateLights() {
+	updateLights() {
+		if(!this._lightsArray)
+			return;
 		const lightsBuffer = this._globals.buffers.lights;
 		
 		let n = 0;
@@ -66,6 +89,11 @@ export class RocketGroup {
 				continue;
 			const pos = rocket.worldMatrix.mul(this._lightOffset).val;
 			this._lightsArray.set(pos, lightsBuffer.itemSize * n++);
+		}
+		for(const expl of this._explsList) {
+			if(n >= lightsBuffer.numItems - 1)
+				break;
+			this._lightsArray.set(expl.target, lightsBuffer.itemSize * n++);
 		}
 		this._lightsCount[0] = n;
 

@@ -2,6 +2,7 @@
 precision highp float;
 
 in  vec2 v_texcoord;
+flat in int v_anchor;
 
 uniform sampler2D tex;
 

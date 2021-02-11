@@ -1,6 +1,6 @@
 import { Camera } from "./Camera.js";
 import {utils, Globals, ModelLoader} from "./index.js";
-import {InstancedRenderer, InstancedBillboardRenderer, BillboardRenderer, Renderer} from "./renderer/index.js";
+import {InstancedRenderer, InstancedBillboardRenderer, Renderer} from "./renderer/index.js";
 import {Rocket} from "./rocket/index.js";
 const Mat4 = utils.matrix.Mat4;
 const [NEAR, FAR] = [50, 20000];
@@ -24,7 +24,7 @@ export class Game extends utils.App {
 		const glContext = this.glContext;
 		this.globals = new Globals(this.glContext);
 		this.globals.addBuffer(   "mat", INSTANCED_BUFSIZE, 16 + 9, 4, glContext.ARRAY_BUFFER);
-		this.globals.addBuffer( "billb", BILLBOARD_BUFSIZE,      6, 4, glContext.ARRAY_BUFFER);
+		this.globals.addBuffer( "billb", BILLBOARD_BUFSIZE,      7, 4, glContext.ARRAY_BUFFER);
 		this.globals.addBuffer("lights",    MAX_LIGHTS + 1,      4, 4, glContext.UNIFORM_BUFFER);
 		const lightsBuf = this.globals.buffers.lights;
 		lightsBuf.bindingPoint = 0;
@@ -87,9 +87,9 @@ export class Game extends utils.App {
 		for(const t of this.terrains)
 			t.draw();
 		gl.enable(gl.BLEND);
-		// TEST
-		this.getRendererList("explosions")[0].draw({target : [0,2500,0], anchor : 4, size : [900,1340], frameN : Math.floor(this.i+=.5) });
-		this.getRendererList("explosions")[0].flush();
+		this.globals.rockets.drawExplosions();
+		for(const r of this.getRendererList("explosions"))
+			r.flush();
 		gl.disable(gl.BLEND);
 		gl.disable(gl.DEPTH_TEST);
 	}
@@ -97,7 +97,7 @@ export class Game extends utils.App {
 	click(e) {
 		if(!this.mouse.pointerLock)
 			return;
-		test(this);
+		test(this, 1);
 	}
 	
 	update(dt) {
@@ -142,7 +142,7 @@ function randRocket(game, havg = 3000) {
 	let {height : y1} = game.globals.collision.findFloorHeight(x1, Infinity, z1);
 	if(y1 == -Infinity) y1 = 0;
 
-	return new Rocket(game.globals, rend).position(x0, y0, z0).trajectory([x1, y1, z1], h, acc);
+	return new Rocket(game.globals, rend, game.getRendererList("explosions")).position(x0, y0, z0).trajectory([x1, y1, z1], h, acc);
 }
 
 function test(game, count = 50) {
