@@ -10,11 +10,15 @@ export class Globals {
 		this.buffers = {};
 		this.projMatrix = Mat4.identity;
 		this.collision = null;
-		this.camera  = new Camera();
+		this.mouse = null;
+		this.keyboard = null;
+		this.camera = null;
 		this.rockets = new RocketGroup(this);
 	}
 
 	get viewMatrix() {
+		if(!this.camera)
+			return null;
 		return this.camera.viewMatrix;
 	}
 
@@ -26,9 +30,5 @@ export class Globals {
 		buffer.itemSize = itemSize;
 		glContext.bindBuffer(target, buffer);
 		glContext.bufferData(target, byteSize * buffer.itemSize * buffer.numItems, glContext.DYNAMIC_DRAW);
-	}
-
-	addCollisionGeo() {
-
 	}
 }

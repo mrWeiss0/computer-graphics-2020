@@ -1,3 +1,4 @@
+import { Camera } from "./Camera.js";
 import {utils, Globals, ModelLoader} from "./index.js";
 import {InstancedRenderer, Renderer} from "./renderer/index.js";
 import {Rocket} from "./rocket/index.js";
@@ -26,6 +27,10 @@ export class Game extends utils.App {
 		const lightsBuf = this.globals.buffers.lights;
 		lightsBuf.bindingPoint = 0;
 		glContext.bindBufferBase(glContext.UNIFORM_BUFFER, lightsBuf.bindingPoint, this.globals.buffers.lights);
+
+		this.globals.mouse = this.mouse;
+		this.globals.keyboard = this.keyboard;
+		this.globals.camera = new Camera(this.globals);
 
 		this.terrains = [];
 		this._modelLoader = null;
@@ -81,7 +86,7 @@ export class Game extends utils.App {
 	}
 	
 	update(dt) {
-		if(this.keyboard.key("Space")) {
+		if(this.keyboard.key("Enter")) {
 			if(this._test) {
 				test(this);
 				this._test = false;
