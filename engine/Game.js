@@ -16,6 +16,7 @@ export class Game extends utils.App {
 		this.initMouse();
 		this.mouse.hideMenu = true;
 		this.mouse.register(this);
+		this.mouse.enablePointerLock();
 		this.initKeyboard();
 
 		const glContext = this.glContext;
@@ -74,6 +75,8 @@ export class Game extends utils.App {
 	}
 
 	click(e) {
+		if(!this.mouse.pointerLock)
+			return;
 		test(this);
 	}
 	
