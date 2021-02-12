@@ -1,4 +1,3 @@
-import { Explosion } from "./Explosion.js";
 import {utils} from "./index.js";
 const Vec4 = utils.matrix.Vec4;
 

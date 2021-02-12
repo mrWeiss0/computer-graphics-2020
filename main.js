@@ -42,11 +42,12 @@ async function main() {
 	program.queryAttributes();
 	program.queryUniforms();
 	program.queryUniformBlocks();
+	program.uniformBlockBinding("u_lights", game.globals.buffers.lights.bindingPoint);
+	program.uniformBlockBinding("u_daylight", game.globals.buffers.daylight.bindingPoint);
 	for(const rend of game.getRendererList("rockets")) {
 		rend.program = program;
 		rend.initVAO();
 	}
-	program.uniformBlockBinding("u_lights", game.globals.buffers.lights.bindingPoint);
 	for(const rend of game.getRendererList("terrains")) {
 		rend.program = program;
 		rend.initVAO();
@@ -70,7 +71,7 @@ async function main() {
 		rend.initVAO();
 	}
 
-	game.globals.camera.position(10000, 6000, 8000);
+	game.globals.camera.position(0, 2000, 8000);
 	game.run();
 	
 	globalThis.game = game;

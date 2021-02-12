@@ -84,5 +84,7 @@ export class Renderer extends AbstractRenderer {
 		gl.bindTexture(gl.TEXTURE_2D, this._tex);
 		gl.uniformMatrix4fv(this._program.getUniformLocation("u_viewmat"), false, this.viewMatrix);
 		gl.uniformMatrix4fv(this._program.getUniformLocation("u_projmat"), false, this.projMatrix);
+		gl.uniform1f(this._program.getUniformLocation("ON_A"), this._ON_A);
+		gl.uniform1f(this._program.getUniformLocation("ON_B"), this._ON_B);
 	}
 }

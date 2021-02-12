@@ -17,7 +17,8 @@
 		"models" : [
 			{
 				"mesh"    : "original/mount.obj",
-				"texture" : "original/ground_grass_3264_4062_Small.jpg"
+				"texture" : "original/ground_grass_3264_4062_Small.jpg",
+				"roughness" : 0.4
 			}
 		]
 	},

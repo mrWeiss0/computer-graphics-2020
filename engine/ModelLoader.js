@@ -12,7 +12,7 @@ export class ModelLoader {
 		this.color    = new Uint8Array([0, 0, 0, 1]);
 	}
 
-	async createRenderer(rendererClass, meshFile, textureFile, path="", color=null) {
+	async createRenderer(rendererClass, meshFile, textureFile, roughness = 0, path="", color=null) {
 		const mesh = await this._getMesh(path + meshFile);
 		// init buffers once
 		if(mesh.vertexBuffer == null)
@@ -28,6 +28,7 @@ export class ModelLoader {
 			if(color != null)
 				this.setColor(oldColor);
 		}
+		rend.roughness = roughness;
 		return rend;
 	}
 
@@ -86,8 +87,8 @@ export class ModelLoader {
 		for(const key in rends) {
 			const type = obj[key];
 			loaded[key] = type.models.map(
-				({ mesh, texture, color }) =>
-					this.createRenderer(rends[key].clazz, mesh, texture, type.path, color || type.color));
+				({ mesh, texture, color, roughness }) =>
+					this.createRenderer(rends[key].clazz, mesh, texture, roughness, type.path, color || type.color));
 		}
 		for(const key in rends) {
 			rends[key].list.push(...(await Promise.all(loaded[key])));

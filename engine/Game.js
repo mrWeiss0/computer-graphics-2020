@@ -1,4 +1,3 @@
-import { Camera } from "./Camera.js";
 import {utils, Globals, ModelLoader} from "./index.js";
 import {InstancedRenderer, InstancedBillboardRenderer, Renderer, ClipBillboardRenderer} from "./renderer/index.js";
 import {Rocket} from "./rocket/index.js";
@@ -26,13 +25,18 @@ export class Game extends utils.App {
 		this.globals.addBuffer(   "mat", INSTANCED_BUFSIZE, 16 + 9, 4, glContext.ARRAY_BUFFER);
 		this.globals.addBuffer( "billb", BILLBOARD_BUFSIZE,      7, 4, glContext.ARRAY_BUFFER);
 		this.globals.addBuffer("lights",    MAX_LIGHTS + 1,      4, 4, glContext.UNIFORM_BUFFER);
+		this.globals.addBuffer("daylight",               3,      4, 4, glContext.UNIFORM_BUFFER);
 		const lightsBuf = this.globals.buffers.lights;
 		lightsBuf.bindingPoint = 0;
 		glContext.bindBufferBase(glContext.UNIFORM_BUFFER, lightsBuf.bindingPoint, this.globals.buffers.lights);
+		const daylightBuf = this.globals.buffers.daylight;
+		daylightBuf.bindingPoint = 1;
+		glContext.bindBufferBase(glContext.UNIFORM_BUFFER, daylightBuf.bindingPoint, daylightBuf);
+		this.dayLightArray = new Float32Array(daylightBuf.itemSize * daylightBuf.numItems);
 
 		this.globals.mouse = this.mouse;
 		this.globals.keyboard = this.keyboard;
-		this.globals.camera = new Camera(this.globals);
+		this.mouse.register(this.globals.camera);
 
 		this.terrains = [];
 		this._modelLoader = null;
@@ -80,6 +84,12 @@ export class Game extends utils.App {
 
 	draw() {
 		let gl = this.glContext;
+		this.dayLightArray.set(this.globals.ambientLight, 0);
+		this.dayLightArray.set(this.globals.sunLight, 4);
+		this.dayLightArray.set(this.globals.sunDir, 8);
+		gl.bindBuffer(gl.UNIFORM_BUFFER, this.globals.buffers.daylight);
+		gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.dayLightArray);
+
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		gl.enable(gl.DEPTH_TEST);
 		this.globals.rockets.draw();
@@ -114,8 +124,7 @@ export class Game extends utils.App {
 		}
 		else
 			this._test = true;
-		this.globals.camera.update(dt);
-		this.globals.rockets.update(dt);
+		this.globals.update(dt);
 	}
 }
 

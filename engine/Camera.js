@@ -12,7 +12,6 @@ export class Camera {
 		this._yaw = 0;
 		this._pitch = - Math.PI / 12;
 		this._viewMat = null;
-		this._globals.mouse.register(this);
 	}
 
 	position(x, y, z) {
