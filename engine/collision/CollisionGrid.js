@@ -12,6 +12,7 @@ export class CollisionGrid {
 		this.nCells  = [ Math.ceil(len[0] / this.cellLen[0]),
 		                 Math.ceil(len[1] / this.cellLen[1]) ];
 		this.grid    = Array.from({length : this.nCells[0] * this.nCells[1]}, () => []);
+        this.triangles = []; 
 	}
 
 	addGeometry(mesh, transform) {
@@ -96,6 +97,8 @@ export class CollisionGrid {
 	}
 
 	_addSurface(s) {
+        this.triangles.push(s);
+
 		const [ fromX, fromZ ] = this._findCell(Math.min(s.a.x, s.b.x, s.c.x), Math.min(s.a.z, s.b.z, s.c.z));
 		const [   toX,   toZ ] = this._findCell(Math.max(s.a.x, s.b.x, s.c.x), Math.max(s.a.z, s.b.z, s.c.z));
 
