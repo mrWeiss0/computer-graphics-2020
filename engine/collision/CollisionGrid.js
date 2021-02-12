@@ -96,6 +96,34 @@ export class CollisionGrid {
 		return position;
 	}
 
+    rayCollision(ray){
+        let position = undefined;
+        let minDistance = Infinity;
+		const floorList = this.triangles;
+
+		for(const floor of floorList){
+			// Find point of intersection between the ray and the plane of the triangle.
+			const collisionPoint = linePlaneCollision(ray, floor);
+			const [x, y, z] = collisionPoint.val;
+
+			const [a, b, c] = floor.vertices;
+			// Check that the point is within the triangle bounds.
+			if ((a.z - z) * (b.x - a.x) - (a.x - x) * (b.z - a.z) < 0)
+				continue;
+			if ((b.z - z) * (c.x - b.x) - (b.x - x) * (c.z - b.z) < 0)
+				continue;
+			if ((c.z - z) * (a.x - c.x) - (c.x - x) * (a.z - c.z) < 0)
+				continue;
+
+			let currDistancedistance = ray.point.sub(collisionPoint).modulo;
+            if(currDistancedistance < minDistance){
+                minDistance = currDistancedistance;
+                position = collisionPoint;
+            }
+		}
+		return position;
+    }
+
 	_addSurface(s) {
         this.triangles.push(s);
 
