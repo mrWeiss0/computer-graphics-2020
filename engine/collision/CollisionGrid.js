@@ -68,14 +68,14 @@ export class CollisionGrid {
 	}
 
 	rayCellCollision(ray, [i,j]){
-		let position = new Array(3);
+		let position = undefined;
 		if(this._outOfBounds(i, j))
 			return position;
 		const floorList = this._getCellList(i,j);
 
 		for(const floor of floorList){
 			// Find point of intersection between the ray and the plane of the triangle.
-			const collisionPoint = linePlaneCollision(line, floor);
+			const collisionPoint = linePlaneCollision(ray, floor);
 			const [x, y, z] = collisionPoint.val;
 
 			const [a, b, c] = floor.vertices;
