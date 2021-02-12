@@ -1,5 +1,7 @@
 import {utils} from "./index.js";
 const Vec3 = utils.matrix.Vec3;
+const Vec4 = utils.matrix.Vec4;
+const Mat3 = utils.matrix.Mat3;
 
 export class Line {
 	constructor(point, dir) {
@@ -32,6 +34,17 @@ export class Line {
 	get dir() {
 		return this._dir;
     }
+
+    static lineFromScreen(xNormScreen, yNormScreen, globals){
+        const viewMatrixInv = globals.viewMatrix.inverse();
+        const projMatrixInv = globals.projMatrix.inverse();
+    
+        const cameraPosWorld = new Vec3(globals.camera._pos);
+        const cameraDirView = projMatrixInv.mul(new Vec4(xNormScreen, yNormScreen, 1, 1));
+        const cameraDirWorld = new Mat3(viewMatrixInv).mul(new Vec3(cameraDirView.x,cameraDirView.y,cameraDirView.z));
+
+        return new this(cameraPosWorld, cameraDirWorld);
+    }
     
     pointFromT(t){
         return new Vec3(
@@ -40,15 +53,4 @@ export class Line {
             this._point.get(2)+t*this._dir.get(2));
     }
 
-    lineFromScreen(xNormScreen, yNormScreen, globals){
-        const viewMatrix = globals.viewMatrix;
-        const projMatrix = globals.projMatrix;
-    
-        const cameraPosWorld = new Vec3(globals.camera._pos);
-        const clipToWorld = projMatrix.mul(viewMatrix).inverse();
-        const cameraDirWorld4 = clipToWorld.mul(new Vec4(xNormScreen, yNormScreen, 1, 1));
-        const cameraDirWorld = new Vec3(cameraDirWorld4.x,cameraDirWorld4.y,cameraDirWorld4.z);
-    
-        new Line(cameraPosWorld, cameraDirWorld);
-    }
 }
