@@ -79,13 +79,15 @@ export class Game extends utils.App {
 	draw() {
 		let gl = this.glContext;
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		this.activeSkybox.draw();
 		gl.enable(gl.DEPTH_TEST);
 		this.globals.rockets.draw();
 		for(const r of this.getRendererList("rockets"))
 			r.flush();
 		for(const t of this.terrains)
 			t.draw();
+		gl.depthFunc(gl.LEQUAL);
+		this.activeSkybox.draw();
+		gl.depthFunc(gl.LESS);
 		gl.enable(gl.BLEND);
 		this.globals.rockets.drawExplosions();
 		for(const r of this.getRendererList("explosions"))

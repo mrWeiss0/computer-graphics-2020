@@ -2,12 +2,12 @@
 uniform mat4 u_viewDirProjInv;
 
 vec4[] position = vec4[](
-	vec4(-1,-1, 0, 1),
-	vec4( 1,-1, 0, 1),
-	vec4( 1, 1, 0, 1),
-	vec4(-1,-1, 0, 1),
-	vec4( 1, 1, 0, 1),
-	vec4(-1, 1, 0, 1)
+	vec4(-1,-1, 1, 1),
+	vec4( 1,-1, 1, 1),
+	vec4( 1, 1, 1, 1),
+	vec4(-1,-1, 1, 1),
+	vec4( 1, 1, 1, 1),
+	vec4(-1, 1, 1, 1)
 );
 
 out vec4 v_pos;
