@@ -6,14 +6,17 @@ export class RocketGroup {
 		this._globals      = globals;
 		this._rocketsList  = null;
 		this._explsList    = null;
-		const lightsBuffer = this._globals.buffers.lights;
-		if(lightsBuffer) {
-			this._lightsArray = new Float32Array(lightsBuffer.itemSize * (lightsBuffer.numItems - 1));
-			this._lightsCount = new Uint32Array(1);
-		}
-		else
-			this._lightsArray = null;
+		this._lightsArray  = null;
+		this._lightsCount  = null;
 		this._lightOffset  = new Vec4(0, 0, 0, 1);
+	}
+
+	initLights() {
+		const lightsBuffer = this._globals.buffers.lights;
+		if(!lightsBuffer)
+			throw new Error("lights buffer not defined");
+		this._lightsArray = new Float32Array(lightsBuffer.itemSize * (lightsBuffer.numItems - 1));
+		this._lightsCount = new Uint32Array(1);
 	}
 
 	/* Set the offset for the rocket light relative to the rocket origin, return this */
@@ -79,20 +82,26 @@ export class RocketGroup {
 		if(!this._lightsArray)
 			return;
 		const lightsBuffer = this._globals.buffers.lights;
+		const maxLights = (lightsBuffer.numItems - 1) / 2;
 		
 		let n = 0;
 		for(const rocket of this) {
-			if(n >= lightsBuffer.numItems - 1)
+			if(n >= maxLights)
 				break;
 			if(!rocket.lightOn)
 				continue;
 			const pos = rocket.worldMatrix.mul(this._lightOffset).val;
-			this._lightsArray.set(pos, lightsBuffer.itemSize * n++);
+			this._lightsArray.set(rocket.lightColor, lightsBuffer.itemSize * (2 * n));
+			this._lightsArray.set(pos,               lightsBuffer.itemSize * (2 * n + 1));
+			++n;
 		}
-		for(const expl of this._explsList) {
-			if(n >= lightsBuffer.numItems - 1)
+		if(this._explsList) for(const expl of this._explsList) {
+			if(n >= maxLights)
 				break;
-			this._lightsArray.set(expl.target, lightsBuffer.itemSize * n++);
+			const pos = [...expl.target, 1];
+			this._lightsArray.set(expl.lightColor, lightsBuffer.itemSize * (2 * n));
+			this._lightsArray.set(pos,             lightsBuffer.itemSize * (2 * n + 1));
+			++n;
 		}
 		this._lightsCount[0] = n;
 

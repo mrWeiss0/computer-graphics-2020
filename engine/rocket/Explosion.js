@@ -14,6 +14,10 @@ export class Explosion extends LinkedList {
 		this._deleted = false;
 	}
 
+	get lightColor() {
+		return [1, 1, 1];
+	}
+
 	get target() {
 		return this._target;
 	}

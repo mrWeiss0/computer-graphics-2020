@@ -24,7 +24,7 @@ export class Game extends utils.App {
 		this.globals = new Globals(this.glContext);
 		this.globals.addBuffer(   "mat", INSTANCED_BUFSIZE, 16 + 9, 4, glContext.ARRAY_BUFFER);
 		this.globals.addBuffer( "billb", BILLBOARD_BUFSIZE,      7, 4, glContext.ARRAY_BUFFER);
-		this.globals.addBuffer("lights",    MAX_LIGHTS + 1,      4, 4, glContext.UNIFORM_BUFFER);
+		this.globals.addBuffer("lights",  2*MAX_LIGHTS + 1,      4, 4, glContext.UNIFORM_BUFFER);
 		this.globals.addBuffer("daylight",               3,      4, 4, glContext.UNIFORM_BUFFER);
 		const lightsBuf = this.globals.buffers.lights;
 		lightsBuf.bindingPoint = 0;
@@ -33,6 +33,8 @@ export class Game extends utils.App {
 		daylightBuf.bindingPoint = 1;
 		glContext.bindBufferBase(glContext.UNIFORM_BUFFER, daylightBuf.bindingPoint, daylightBuf);
 		this.dayLightArray = new Float32Array(daylightBuf.itemSize * daylightBuf.numItems);
+		this.globals.rockets.lightOffset(0, 0, -6);
+		this.globals.rockets.initLights();
 
 		this.globals.mouse = this.mouse;
 		this.globals.keyboard = this.keyboard;
@@ -90,6 +92,7 @@ export class Game extends utils.App {
 		gl.bindBuffer(gl.UNIFORM_BUFFER, this.globals.buffers.daylight);
 		gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.dayLightArray);
 
+		this.globals.rockets.updateLights();
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		gl.enable(gl.DEPTH_TEST);
 		this.globals.rockets.draw();
@@ -136,7 +139,7 @@ function createRendObject(...entries) {
 }
 
 function randRocket(game, havg = 3000) {
-	const acc = 2 ** (Math.random() * 2 - .5) * game.globals.gravity;
+	const acc = 2 ** (Math.random() * 2 - 2) * game.globals.gravity;
 	const h   = 1000 * (Math.random() * 2 - 1) + havg;
 
 	const renderers = game.getRendererList("rockets");
@@ -148,15 +151,15 @@ function randRocket(game, havg = 3000) {
 		rend = renderers[0];
 	
 	const x0 = 1000 * (Math.random() * 6 - 3);
-	const z0 = 1000 * (Math.random() * 8 - 4);
+	const z0 = 1000 * (Math.random() * 4);
 	const {height : y0} = game.globals.collision.findFloorHeight(x0, Infinity, z0);
 
-	const x1 = 1000 * (Math.random() * 8 - 4);
-	const z1 = 1000 * (Math.random() * 10 - 5);
+	const x1 = 1000 * (Math.random() * 6 - 3);
+	const z1 = 1000 * (Math.random() * 4 - 4);
 	let {height : y1} = game.globals.collision.findFloorHeight(x1, Infinity, z1);
 	if(y1 == -Infinity) y1 = 0;
 
-	return new Rocket(game.globals, rend, game.getRendererList("explosions")).position(x0, y0, z0).trajectory([x1, y1, z1], h, acc);
+	return new Rocket(game.globals, rend, game.getRendererList("explosions")).position(x0, y0 + 200, z0).trajectory([x1, y1, z1], h, acc);
 }
 
 function test(game, count = 50) {

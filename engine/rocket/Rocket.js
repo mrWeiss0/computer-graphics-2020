@@ -120,6 +120,10 @@ export class Rocket extends LinkedList {
 	get lightOn() {
 		return this._launched && this._timeout > 0;
 	}
+
+	get lightColor() {
+		return [1, 1, 1];
+	}
 	
 	/* Get the world transform matrix */
 	get worldMatrix() {

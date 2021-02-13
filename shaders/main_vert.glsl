@@ -1,22 +1,32 @@
 #version 300 es
-#define MAX_LIGHTS 4
+#define MAX_POINT_LIGHTS 50
 
 uniform mat4 u_projmat;
 uniform mat4 u_viewmat;
 
-layout(std140) uniform u_daylight {
-	vec3 u_ambient_light;
-	vec3 u_directional_light;
-	vec3 u_directional_dir;
+uniform float u_ON_A;
+uniform float u_ON_B;
+float decay_base = 200.;
+
+struct dir_light {
+	vec3 color;
+	vec3 direction;
 };
 
-uniform float ON_A;
-uniform float ON_B;
+layout(std140) uniform u_daylight {
+	vec3 u_ambient_light;
+	dir_light u_sun_light;
+};
 
-//layout(std140) uniform u_lights {
-//	uint u_lcount;
-//	vec3 u_lpos[MAX_LIGHTS];
-//};
+struct point_light {
+	vec3 color;
+	vec4 position;
+};
+
+layout(std140) uniform u_lights {
+	uint u_point_light_count;
+	point_light u_point_light[MAX_POINT_LIGHTS];
+};
 
 in  vec4 a_position;
 in  vec3 a_normal;
@@ -30,28 +40,43 @@ out vec4 v_light;
 void main() {
 	gl_Position = u_projmat * a_objmat * a_position;
 
-	vec3  normal   = normalize(a_normmat * a_normal);
-	vec3  light    = mat3(u_viewmat) * normalize(u_directional_dir);
-	float cosLight = dot(normal, light);
+	vec3 light    = u_ambient_light;
+	vec3 position = vec3(a_objmat * a_position);
+	vec3 normal   = normalize(a_normmat * a_normal);
 
-	float ON_light = ON_A;
-	if(ON_B != 0.) {
-		vec3  position = vec3(a_objmat * a_position);
-		vec3  eye      = normalize(-position);
-		float cosEye   = dot(normal, eye);
-		float ON_G     = max( 0., dot(
-			normalize(light - cosLight * normal),
-			normalize(  eye -   cosEye * normal)
-		));
-		if(ON_G != 0.) {
-			float cosAlpha = min(cosLight, cosEye);
-			float cosBeta  = max(cosLight, cosEye);
-			ON_light += ON_B * ON_G * sqrt(1. - cosAlpha * cosAlpha) * sqrt(1. - cosBeta * cosBeta) / cosBeta;
+	/* Sun light Oren Nayar */
+	{
+		vec3  lightDir = normalize(mat3(u_viewmat) * u_sun_light.direction);
+		float cosLight = dot(normal, lightDir);
+		float ON_coeff = u_ON_A;
+		if(u_ON_B != 0.) {
+			vec3  eyeDir = normalize(-position);
+			float cosEye = dot(normal, eyeDir);
+			float ON_G   = max( 0., dot(
+				normalize(lightDir - cosLight * normal),
+				normalize(  eyeDir -   cosEye * normal)
+			));
+			if(ON_G != 0.) {
+				float cosAlpha = min(cosLight, cosEye);
+				float cosBeta  = max(cosLight, cosEye);
+				ON_coeff += u_ON_B * ON_G * sqrt(1. - cosAlpha * cosAlpha) * sqrt(1. - cosBeta * cosBeta) / cosBeta;
+			}
 		}
+		light += u_sun_light.color * ON_coeff * clamp(cosLight, 0., 1.);
 	}
 
-	v_light.rgb = u_directional_light * ON_light * clamp(cosLight, 0., 1.) + u_ambient_light;
-	v_light.a = 1.;
+	/* Point lights Lambert */
+	for(uint i = 0u; i < u_point_light_count; i++) {
+		point_light point_light_i = u_point_light[i];
+		vec3  lx        = vec3(u_viewmat * point_light_i.position) - position;
+		float cosLight  = dot(normal, normalize(lx));
+		float lightDist = length(lx);
+		if(lightDist < decay_base * 5.)
+			light += point_light_i.color * (decay_base * decay_base) / (lightDist * lightDist) * clamp(cosLight, 0., 1.);
+	}
+
+	v_light.rgb = light;
+	v_light.a   = 1.;
 
 	v_texcoord  = a_texcoord;
 }
