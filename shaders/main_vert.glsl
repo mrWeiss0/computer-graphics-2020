@@ -30,21 +30,28 @@ out vec4 v_light;
 void main() {
 	gl_Position = u_projmat * a_objmat * a_position;
 
-	vec3 normal   = normalize(a_normmat * a_normal);
-	vec3 position = vec3(a_objmat * a_position);
-	vec3 light    = mat3(u_viewmat) * normalize(u_directional_dir);
-	vec3 eye      = normalize(-position);
-	float cosLight  = dot(normal, light);
-	float cosEye    = dot(normal, eye);
-	float cosAlpha  = min(cosLight, cosEye);
-	float cosBeta   = max(cosLight, cosEye);
-	float ON_G      = max( 0., dot(
-		normalize(light - cosLight * normal),
-		normalize(  eye -   cosEye * normal)
-	));
-	
-	float ON_light = ON_A + ON_B * ON_G * sqrt(1. - cosAlpha * cosAlpha) * sqrt(1. - cosBeta * cosBeta) / cosBeta;
-	v_light = vec4(u_directional_light * ON_light * clamp(cosLight, 0., 1.) + u_ambient_light, 1.);
+	vec3  normal   = normalize(a_normmat * a_normal);
+	vec3  light    = mat3(u_viewmat) * normalize(u_directional_dir);
+	float cosLight = dot(normal, light);
+
+	float ON_light = ON_A;
+	if(ON_B != 0.) {
+		vec3  position = vec3(a_objmat * a_position);
+		vec3  eye      = normalize(-position);
+		float cosEye   = dot(normal, eye);
+		float ON_G     = max( 0., dot(
+			normalize(light - cosLight * normal),
+			normalize(  eye -   cosEye * normal)
+		));
+		if(ON_G != 0.) {
+			float cosAlpha = min(cosLight, cosEye);
+			float cosBeta  = max(cosLight, cosEye);
+			ON_light += ON_B * ON_G * sqrt(1. - cosAlpha * cosAlpha) * sqrt(1. - cosBeta * cosBeta) / cosBeta;
+		}
+	}
+
+	v_light.rgb = u_directional_light * ON_light * clamp(cosLight, 0., 1.) + u_ambient_light;
+	v_light.a = 1.;
 
 	v_texcoord  = a_texcoord;
 }
