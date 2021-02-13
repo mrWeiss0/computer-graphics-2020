@@ -174,7 +174,7 @@ function rayTest(game, havg = 3000){
 	else
 		rend = renderers[0];
 	
-    const ray = Line.lineFromScreen(0,0, game.globals);
+    const ray = Line.fromScreen(0,0, game.globals);
     const rocketSpawn = game.globals.collision.rayCollision(ray);
 
 	const x0 = rocketSpawn.x;

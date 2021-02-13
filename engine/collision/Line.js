@@ -35,7 +35,7 @@ export class Line {
 		return this._dir;
     }
 
-    static lineFromScreen(xNormScreen, yNormScreen, globals){
+    static fromScreen(xNormScreen, yNormScreen, globals){
         const viewMatrixInv = globals.viewMatrix.inverse();
         const projMatrixInv = globals.projMatrix.inverse();
     
