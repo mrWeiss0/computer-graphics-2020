@@ -32,5 +32,13 @@ export class AbstractRenderer {
 			throw new Error("Invalid Texture");
 	}
 
+	get viewMatrix() {
+		return this._globals.viewMatrix;
+	}
+
+	get projMatrix() {
+		return this._globals.projMatrix;
+	}
+
 	initVAO() {}
 }

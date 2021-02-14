@@ -17,7 +17,8 @@ int[] index = int[](
 	2, 6, 8
 );
 
-uniform mat4 u_v;
+uniform vec3 u_camRight;
+uniform vec3 u_camUp;
 uniform mat4 u_pv;
 uniform vec2 framesize;
 uniform int anchor;
@@ -33,12 +34,10 @@ void main() {
 	v_texcoord = vertex * framesize + frameoffset;
 
 	vertex -= position[anchor];
-	vec3 camRight = vec3(u_v[0][0], u_v[1][0], u_v[2][0]);
-	vec3 camUp    = vec3(u_v[0][1], u_v[1][1], u_v[2][1]);
 	
     gl_Position = u_pv * vec4(
 		target +
-		camRight * vertex.x * size.x +
-    	camUp    * vertex.y * size.y,
+		u_camRight * vertex.x * size.x +
+    	u_camUp    * vertex.y * size.y,
 	1.);
 }

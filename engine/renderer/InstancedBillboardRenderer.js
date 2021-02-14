@@ -8,7 +8,6 @@ export class InstancedBillboardRenderer extends BillboardRenderer {
 		if(!dataBuffer)
 			throw new Error("mat buffer not defined");
 		this._matArray   = new Float32Array(dataBuffer.itemSize * dataBuffer.numItems);
-		this._intArray   = new Int32Array(this._matArray.buffer);
 	}
 
 	/* Initialize the Vertex Array Object */
@@ -78,13 +77,7 @@ export class InstancedBillboardRenderer extends BillboardRenderer {
 			return;
 		
 		const gl = this._globals.glContext;
-		this._program.use();
-		gl.bindVertexArray(this._vao);
-		gl.bindTexture(gl.TEXTURE_2D, this._tex);
-		gl.uniform1i(this._program.getUniformLocation("anchor"), this.anchor);
-		gl.uniform2f(this._program.getUniformLocation("framesize"), this.sheetW_i, this.sheetH_i);
-		gl.uniformMatrix4fv(this._program.getUniformLocation("u_v"), false, this._globals.viewMatrix);
-		gl.uniformMatrix4fv(this._program.getUniformLocation("u_pv"), false, this._globals.projMatrix.mul(this._globals.viewMatrix));
+		this._prepareDrawCall();
 		gl.bindBuffer(gl.ARRAY_BUFFER, this._globals.buffers.billb);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this._matArray);
 

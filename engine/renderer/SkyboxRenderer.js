@@ -7,11 +7,11 @@ export class SkyboxRenderer extends AbstractRenderer {
 	}
 
 	draw() {
-		const camMatrix = this._globals.viewMatrix.inverse();
+		const camMatrix = this.viewMatrix.inverse();
 		camMatrix.set(3,0,0);
 		camMatrix.set(3,1,0);
 		camMatrix.set(3,2,0);
-		const skyboxMatrix = camMatrix.mul(this._globals.projMatrix.inverse());
+		const skyboxMatrix = camMatrix.mul(this.projMatrix.inverse());
 		this._matArray.set(skyboxMatrix.val, 0);
 		
 		this.flush();

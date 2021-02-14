@@ -61,7 +61,7 @@ export class InstancedRenderer extends Renderer {
 	/* Queue an object for instanced rendering */
 	draw(obj) {
 		const matBuffer = this._globals.buffers.mat;
-		const viewMatrix = this._globals.viewMatrix;
+		const viewMatrix = this.viewMatrix;
 		this._matArray.set(viewMatrix.mul(obj.worldMatrix).val, matBuffer.itemSize * this._count);
 		this._matArray.set(new Mat3(viewMatrix.mul(obj.worldMatrix)).transposed().inverse().val, matBuffer.itemSize * this._count + 16);
 		if(++this._count >= matBuffer.numItems)
@@ -74,10 +74,7 @@ export class InstancedRenderer extends Renderer {
 			return;
 		
 		const gl = this._globals.glContext;
-		this._program.use();
-		gl.bindVertexArray(this._vao);
-		gl.bindTexture(gl.TEXTURE_2D, this._tex);
-		gl.uniformMatrix4fv(this._program.getUniformLocation("u_projmat"), false, this._globals.projMatrix);
+		this._prepareDrawCall();
 		gl.bindBuffer(gl.ARRAY_BUFFER, this._globals.buffers.mat);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, this._matArray);
 
