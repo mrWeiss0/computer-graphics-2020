@@ -2,8 +2,9 @@
 import {utils, Camera, hsbToRgb} from "./index.js";
 import {RocketGroup} from "./rocket/index.js";
 const Mat4 = utils.matrix.Mat4;
-const Vec3 = utils.matrix.Vec3;
 const Vec4 = utils.matrix.Vec4;
+
+const DAYSPE = .0005;
 
 export class Globals {
 	constructor(glContext) {
@@ -20,10 +21,13 @@ export class Globals {
 		this.rockets = new RocketGroup(this);
 		
 		this.sunAngle = 0;
+		this.dayCycle = .5;
 	}
 
 	get sunLight() {
-		return hsbToRgb(.12, .1, 1);
+		const b = 1 - 4 * (this.dayCycle - .5) ** 2;
+		const s = 4 * (this.dayCycle - .5) ** 2;
+		return hsbToRgb(.08, s, Math.max(0, 0.8 * b));
 	}
 
 	get ambientLight() {
@@ -31,7 +35,7 @@ export class Globals {
 	}
 
 	get sunHeight() {
-		return Math.PI / 6;
+		return (this.dayCycle - .5) * Math.PI;
 	}
 
 	get sunDir() {
@@ -60,8 +64,15 @@ export class Globals {
 	}
 
 	update(dt) {
-		//this.sunHeight += 0.02;
-		//this.sunHeight %= 2 * Math.PI;
+		const kb = this.keyboard;
+
+		let h = 0;
+		if(kb.key("ArrowRight"))
+			++h;
+		if(kb.key("ArrowLeft"))
+			--h;
+		if(h)
+			this.dayCycle = Math.max(0, Math.min(this.dayCycle + h * DAYSPE * dt, 1));
 		this.camera.update(dt);
 		this.rockets.update(dt);
 	}
