@@ -129,6 +129,8 @@ export class Game extends utils.App {
 		}
 		else
 			this._test = true;
+		if(this.keyboard.key("KeyZ"))
+			this.globals.followedRocket = null;
 		this.globals.update(dt);
 	}
 }
@@ -217,12 +219,12 @@ function rocketFollowTest(game, havg = 3000){
 	else
 		rend = renderers[0];
 
-	const x0 = 100//1000 * (Math.random() * 6 - 3);
-	const z0 = 100//1000 * (Math.random() * 4);
+	const x0 = 1000 * (Math.random() * 6 - 3);
+	const z0 = 1000 * (Math.random() * 4);
 	const {height : y0} = game.globals.collision.findFloorHeight(x0, Infinity, z0);
 
-	const x1 = 3000//1000 * (Math.random() * 6 - 3);
-	const z1 = 3000//1000 * (Math.random() * 4 - 4);
+	const x1 = 1000 * (Math.random() * 6 - 3);
+	const z1 = 1000 * (Math.random() * 4 - 4);
 	let {height : y1} = game.globals.collision.findFloorHeight(x1, Infinity, z1);
 	if(y1 == -Infinity) y1 = 0;
 

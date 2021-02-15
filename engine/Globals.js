@@ -42,18 +42,10 @@ export class Globals {
 	}
 
 	get viewMatrix() {
-		if(this.followedRocket){
-			if(this.followedRocket._deleted)
-				this.followedRocket = null;
-			else {
-				const rocketWorldMatrix = this.followedRocket.worldMatrix;
-				const [x0, y0, z0] = rocketWorldMatrix.mul(new Vec4(0,-10, 0, 1)).val;
-				const [xA, yA, zA] = rocketWorldMatrix.mul(new Vec4(0,  0, 5, 1)).val;
-				const origin = new Vec3(x0, y0, z0);
-				const lookAt = new Vec3(xA, yA, zA);
-				const upVector = lookAt.cross(origin).cross(lookAt.sub(origin));
-				return Mat4.lookAt(origin.val, lookAt.val, upVector.val).inverse();
-			}
+		const rocket = this.followedRocket;
+		if(rocket){
+			const rocketCamera = rocket.followMatrix.mul(new Vec4(4, -10, -6, 1));
+			return Mat4.lookAt([rocketCamera.x, rocketCamera.y, rocketCamera.z], rocket._pos).inverse();
 		}
 		if(!this.camera)
 			return null;

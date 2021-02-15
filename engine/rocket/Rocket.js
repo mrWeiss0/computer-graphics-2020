@@ -52,6 +52,7 @@ export class Rocket extends LinkedList {
 		// Horizontal and vertical scale
 		this._hvscale  = [1, 1];
 		this._wrldMat  = null;
+		this._followMat = null;
 		this._launched = false;
 		this._deleted  = false;
 	}
@@ -134,9 +135,17 @@ export class Rocket extends LinkedList {
 		if(this._wrldMat == null)
 			this._wrldMat = matrix.Mat4.transl(...this._pos)
 			           .mul(this._pitchyaw)
-			           //.mul(matrix.Mat4.rotZ(this._roll))
+			           .mul(matrix.Mat4.rotZ(this._roll))
 			           .mul(matrix.Mat4.scale(this._hvscale[0], this._hvscale[0], this._hvscale[1]));
 		return this._wrldMat;
+	}
+
+	get followMatrix() {
+		if(this._followMat == null)
+			this._followMat = matrix.Mat4.transl(...this._pos)
+			           .mul(this._pitchyaw)
+			           .mul(matrix.Mat4.scale(this._hvscale[0], this._hvscale[0], this._hvscale[1]));
+		return this._followMat;
 	}
 
 	/* Update movement */
@@ -152,6 +161,7 @@ export class Rocket extends LinkedList {
 		}
 		// Invalid previous matrix
 		this._wrldMat = null;
+		this._followMat = null;
 		this._ttl  -= dt;
 		// If timeout elapsed in this delta
 		// update first for timeout with propulsion an
