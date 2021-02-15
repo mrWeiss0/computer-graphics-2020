@@ -1,6 +1,7 @@
 import {utils, Globals, ModelLoader} from "./index.js";
 import {InstancedRenderer, InstancedBillboardRenderer, Renderer, ClipBillboardRenderer} from "./renderer/index.js";
 import {Rocket} from "./rocket/index.js";
+import {Line} from "./collision/index.js";
 const Mat4 = utils.matrix.Mat4;
 const [NEAR, FAR] = [50, 20000];
 
@@ -115,7 +116,8 @@ export class Game extends utils.App {
 	click(e) {
 		if(!this.mouse.pointerLock)
 			return;
-		test(this, 1);
+		//test(this, 1);
+        rayTest(this);
 	}
 	
 	update(dt) {
@@ -170,4 +172,35 @@ function test(game, count = 25) {
 		game.globals.rockets.addRocket(rocket.scale(50));
 		rocket.launch();
 	}
+}
+
+function rayTest(game, havg = 3000){
+    const acc = 2 ** (Math.random() * 2 - .5) * game.globals.gravity;
+	const h   = 1000 * (Math.random() * 2 - 1) + havg;
+
+	const renderers = game.getRendererList("rockets");
+	const r = Math.random();
+	let rend;
+	if(r < .8)
+		rend = renderers[1];
+	else
+		rend = renderers[0];
+	
+    const ray = Line.fromScreen(0,0, game.globals);
+    const rocketSpawn = game.globals.collision.rayCollision(ray);
+
+	const x0 = rocketSpawn.x;
+	const y0 = rocketSpawn.y;
+	const z0 = rocketSpawn.z;
+
+	const x1 = 1000 * (Math.random() * 8 - 4);
+	const z1 = 1000 * (Math.random() * 10 - 5);
+	let {height : y1} = game.globals.collision.findFloorHeight(x1, Infinity, z1);
+	if(y1 == -Infinity) y1 = 0;
+
+	const rocket =
+        new Rocket(game.globals, rend, game.getRendererList("explosions")).position(x0, y0, z0).trajectory([x1, y1, z1], h, acc);
+    game.globals.rockets.addRocket(rocket.scale(50));
+    rocket._rspe = .003;
+    rocket.launch();    
 }

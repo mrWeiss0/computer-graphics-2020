@@ -1,4 +1,4 @@
-import {Surface, utils} from "./index.js";
+import {Surface, utils, linePlaneCollision} from "./index.js";
 const Vec3 = utils.matrix.Vec3;
 const Vec4 = utils.matrix.Vec4;
 
@@ -12,6 +12,7 @@ export class CollisionGrid {
 		this.nCells  = [ Math.ceil(len[0] / this.cellLen[0]),
 		                 Math.ceil(len[1] / this.cellLen[1]) ];
 		this.grid    = Array.from({length : this.nCells[0] * this.nCells[1]}, () => []);
+        this.triangles = []; 
 	}
 
 	addGeometry(mesh, transform) {
@@ -67,7 +68,65 @@ export class CollisionGrid {
 		return found;
 	}
 
+	rayCellCollision(ray, [i,j]){
+		let position = undefined;
+		if(this._outOfBounds(i, j))
+			return position;
+		const floorList = this._getCellList(i,j);
+
+		for(const floor of floorList){
+			// Find point of intersection between the ray and the plane of the triangle.
+			const collisionPoint = linePlaneCollision(ray, floor);
+			const [x, y, z] = collisionPoint.val;
+
+			const [a, b, c] = floor.vertices;
+			// Check that the point is within the triangle bounds.
+			if ((a.z - z) * (b.x - a.x) - (a.x - x) * (b.z - a.z) < 0)
+				continue;
+			if ((b.z - z) * (c.x - b.x) - (b.x - x) * (c.z - b.z) < 0)
+				continue;
+			if ((c.z - z) * (a.x - c.x) - (c.x - x) * (a.z - c.z) < 0)
+				continue;
+
+			// Cucking? Hard to fix, as one would need 
+			// to choose the closest triangle to the camera
+			position = collisionPoint.val;
+			break;
+		}
+		return position;
+	}
+
+    rayCollision(ray){
+        let position = undefined;
+        let minDistance = Infinity;
+		const floorList = this.triangles;
+
+		for(const floor of floorList){
+			// Find point of intersection between the ray and the plane of the triangle.
+			const collisionPoint = linePlaneCollision(ray, floor);
+			const [x, y, z] = collisionPoint.val;
+
+			const [a, b, c] = floor.vertices;
+			// Check that the point is within the triangle bounds.
+			if ((a.z - z) * (b.x - a.x) - (a.x - x) * (b.z - a.z) < 0)
+				continue;
+			if ((b.z - z) * (c.x - b.x) - (b.x - x) * (c.z - b.z) < 0)
+				continue;
+			if ((c.z - z) * (a.x - c.x) - (c.x - x) * (a.z - c.z) < 0)
+				continue;
+
+			let currDistancedistance = ray.point.sub(collisionPoint).modulo;
+            if(currDistancedistance < minDistance){
+                minDistance = currDistancedistance;
+                position = collisionPoint;
+            }
+		}
+		return position;
+    }
+
 	_addSurface(s) {
+        this.triangles.push(s);
+
 		const [ fromX, fromZ ] = this._findCell(Math.min(s.a.x, s.b.x, s.c.x), Math.min(s.a.z, s.b.z, s.c.z));
 		const [   toX,   toZ ] = this._findCell(Math.max(s.a.x, s.b.x, s.c.x), Math.max(s.a.z, s.b.z, s.c.z));
 
