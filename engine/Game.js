@@ -117,7 +117,7 @@ export class Game extends utils.App {
 		if(!this.mouse.pointerLock)
 			return;
 		//test(this, 1);
-        rayTest(this);
+		rocketFollowTest(this);
 	}
 	
 	update(dt) {
@@ -185,9 +185,10 @@ function rayTest(game, havg = 3000){
 		rend = renderers[1];
 	else
 		rend = renderers[0];
-	
-    const ray = Line.fromScreen(0,0, game.globals);
-    const rocketSpawn = game.globals.collision.rayCollision(ray);
+
+
+	const ray = Line.fromScreen(0,0, game.globals);
+	const rocketSpawn = game.globals.collision.rayCollision(ray);
 
 	const x0 = rocketSpawn.x;
 	const y0 = rocketSpawn.y;
@@ -203,4 +204,31 @@ function rayTest(game, havg = 3000){
     game.globals.rockets.addRocket(rocket.scale(50));
     rocket._rspe = .003;
     rocket.launch();    
+}
+
+function rocketFollowTest(game, havg = 3000){
+    const acc = 2 ** (Math.random() * 2 - .5) * game.globals.gravity;
+	const h   = 1000 * (Math.random() * 2 - 1) + havg;
+	const renderers = game.getRendererList("rockets");
+	const r = Math.random();
+	let rend;
+	if(r < .8)
+		rend = renderers[1];
+	else
+		rend = renderers[0];
+
+	const x0 = 100//1000 * (Math.random() * 6 - 3);
+	const z0 = 100//1000 * (Math.random() * 4);
+	const {height : y0} = game.globals.collision.findFloorHeight(x0, Infinity, z0);
+
+	const x1 = 3000//1000 * (Math.random() * 6 - 3);
+	const z1 = 3000//1000 * (Math.random() * 4 - 4);
+	let {height : y1} = game.globals.collision.findFloorHeight(x1, Infinity, z1);
+	if(y1 == -Infinity) y1 = 0;
+
+	const rocket = new Rocket(game.globals, rend, game.getRendererList("explosions")).position(x0, y0 + 200, z0).trajectory([x1, y1, z1], h, acc);
+	game.globals.followedRocket = rocket;
+
+	game.globals.rockets.addRocket(rocket.scale(50));
+	rocket.launch();
 }

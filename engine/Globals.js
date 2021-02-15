@@ -2,6 +2,8 @@
 import {utils, Camera, hsbToRgb} from "./index.js";
 import {RocketGroup} from "./rocket/index.js";
 const Mat4 = utils.matrix.Mat4;
+const Vec3 = utils.matrix.Vec3;
+const Vec4 = utils.matrix.Vec4;
 
 export class Globals {
 	constructor(glContext) {
@@ -14,6 +16,7 @@ export class Globals {
 		this.mouse = null;
 		this.keyboard = null;
 		this.camera = new Camera(this);
+		this.followedRocket = null;
 		this.rockets = new RocketGroup(this);
 		
 		this.sunAngle = 0;
@@ -39,6 +42,19 @@ export class Globals {
 	}
 
 	get viewMatrix() {
+		if(this.followedRocket){
+			if(this.followedRocket._deleted)
+				this.followedRocket = null;
+			else {
+				const rocketWorldMatrix = this.followedRocket.worldMatrix;
+				const [x0, y0, z0] = rocketWorldMatrix.mul(new Vec4(0,-10, 0, 1)).val;
+				const [xA, yA, zA] = rocketWorldMatrix.mul(new Vec4(0,  0, 5, 1)).val;
+				const origin = new Vec3(x0, y0, z0);
+				const lookAt = new Vec3(xA, yA, zA);
+				const upVector = lookAt.cross(origin).cross(lookAt.sub(origin));
+				return Mat4.lookAt(origin.val, lookAt.val, upVector.val).inverse();
+			}
+		}
 		if(!this.camera)
 			return null;
 		return this.camera.viewMatrix;
