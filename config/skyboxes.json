@@ -1,5 +1,5 @@
 {
-	"path" : "assets/models/skyboxes/",
+	"path" : "assets/skyboxes/",
 	"cubemaps" : [
 		{
 			"name"  : "miramar/",
