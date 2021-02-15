@@ -6,3 +6,4 @@ export {ModelLoader} from "./ModelLoader.js";
 export {Terrain} from "./Terrain.js";
 export * as renderer from "./renderer/index.js";
 export * as rocket from "./rocket/index.js";
+export {hsbToRgb} from "./utils.js";

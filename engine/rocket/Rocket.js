@@ -1,4 +1,4 @@
-import {utils, Explosion} from "./index.js";
+import {utils, Explosion, hsbToRgb} from "./index.js";
 const LinkedList = utils.LinkedList;
 const matrix = utils.matrix;
 
@@ -6,7 +6,10 @@ const PITCH_ANI = .05;
 const TERM_VEL  = -2.5;
 const RSPE_MAX = .005;
 const RSPE_ACC = 1e-6;
-const EXPLS_SCALE = 5;
+const EXPLS_SCALE = 6;
+const EXPLS_OFFSET = 1;
+const TOUT_LIGHT_FADE = 500;
+const MAX_LIGHT = .6;
 
 /*
  * Rocket class
@@ -122,7 +125,8 @@ export class Rocket extends LinkedList {
 	}
 
 	get lightColor() {
-		return [1, 1, 1];
+		const brightness = Math.min(1, this._timeout / TOUT_LIGHT_FADE) * MAX_LIGHT * this._hvscale[0];
+		return hsbToRgb(.056, .55, brightness);
 	}
 	
 	/* Get the world transform matrix */
@@ -176,7 +180,7 @@ export class Rocket extends LinkedList {
 		}
 		// If floor collision warp up
 		if(this._pos.y < height) {
-			this._pos.y = height;
+			this._pos.y = height + this._hvscale[0] * EXPLS_OFFSET;
 			this._deleted = true;
 			this._globals.rockets.addExplosion(new Explosion(this._explosions[0], this._pos, this._hvscale[0] * EXPLS_SCALE));
 		}

@@ -162,7 +162,7 @@ function randRocket(game, havg = 3000) {
 	return new Rocket(game.globals, rend, game.getRendererList("explosions")).position(x0, y0 + 200, z0).trajectory([x1, y1, z1], h, acc);
 }
 
-function test(game, count = 50) {
+function test(game, count = 25) {
 	let rockets = [];
 	for(let i = 0; i < count; i++)
 		rockets.push(randRocket(game));

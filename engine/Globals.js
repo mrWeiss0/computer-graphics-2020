@@ -1,5 +1,5 @@
 
-import {utils, Camera} from "./index.js";
+import {utils, Camera, hsbToRgb} from "./index.js";
 import {RocketGroup} from "./rocket/index.js";
 const Mat4 = utils.matrix.Mat4;
 
@@ -16,10 +16,19 @@ export class Globals {
 		this.camera = new Camera(this);
 		this.rockets = new RocketGroup(this);
 		
-		this.sunHeight = Math.PI / 6;
 		this.sunAngle = 0;
-		this.sunLight = [1, 1, 1];
-		this.ambientLight = [0.2, 0.2, 0.2];
+	}
+
+	get sunLight() {
+		return hsbToRgb(.12, .1, 1);
+	}
+
+	get ambientLight() {
+		return hsbToRgb(.61, .3, .15);
+	}
+
+	get sunHeight() {
+		return Math.PI / 6;
 	}
 
 	get sunDir() {

@@ -55,6 +55,8 @@ async function main() {
 
 	const skyboxProg = game.getProgram("skybox");
 	skyboxProg.queryUniforms();
+	skyboxProg.queryUniformBlocks();
+	skyboxProg.uniformBlockBinding("u_daylight", game.globals.buffers.daylight.bindingPoint);
 	for(const skybox of game.skyboxes.values()) {
 		skybox.program = skyboxProg;
 	}

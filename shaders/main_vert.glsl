@@ -6,7 +6,7 @@ uniform mat4 u_viewmat;
 
 uniform float u_ON_A;
 uniform float u_ON_B;
-float decay_base = 200.;
+float decay_base = 100.;
 
 struct dir_light {
 	vec3 color;
@@ -71,7 +71,7 @@ void main() {
 		vec3  lx        = vec3(u_viewmat * point_light_i.position) - position;
 		float cosLight  = dot(normal, normalize(lx));
 		float lightDist = length(lx);
-		if(lightDist < decay_base * 5.)
+		//if(lightDist < decay_base * 2.)
 			light += point_light_i.color * (decay_base * decay_base) / (lightDist * lightDist) * clamp(cosLight, 0., 1.);
 	}
 

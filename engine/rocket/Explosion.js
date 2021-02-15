@@ -1,7 +1,9 @@
-import {utils} from "./index.js";
+import {utils, hsbToRgb} from "./index.js";
 const LinkedList = utils.LinkedList;
 
 const FRAMES_PER_MS = .02;
+const FRAME_LIGHT_FADE = 10;
+const MAX_LIGHT = .15;
 
 export class Explosion extends LinkedList {
 	constructor(renderer, target, width) {
@@ -15,7 +17,8 @@ export class Explosion extends LinkedList {
 	}
 
 	get lightColor() {
-		return [1, 1, 1];
+		const brightness = Math.min(1, ( this._renderer.frameCount - this._frameN ) / FRAME_LIGHT_FADE) * MAX_LIGHT * this._size[0];
+		return hsbToRgb(.03, .8, brightness);
 	}
 
 	get target() {
