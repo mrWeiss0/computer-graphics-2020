@@ -156,7 +156,6 @@ function test(game, count = 50) {
 		rockets.push(randRocket(game));
 	for(const rocket of rockets) {
 		game.globals.rockets.addRocket(rocket.scale(50));
-		rocket._rspe = .003;
 		rocket.launch();
 	}
 }

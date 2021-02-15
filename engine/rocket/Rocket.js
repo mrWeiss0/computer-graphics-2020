@@ -4,6 +4,8 @@ const matrix = utils.matrix;
 
 const PITCH_ANI = .05;
 const TERM_VEL  = -2.5;
+const RSPE_MAX = .005;
+const RSPE_ACC = 1e-6;
 const EXPLS_SCALE = 5;
 
 /*
@@ -142,7 +144,6 @@ export class Rocket extends LinkedList {
 		}
 		// Invalid previous matrix
 		this._wrldMat = null;
-		this._roll += this._rspe * dt;
 		this._ttl  -= dt;
 		// If timeout elapsed in this delta
 		// update first for timeout with propulsion an
@@ -156,6 +157,11 @@ export class Rocket extends LinkedList {
 		else
 			this._timeout -= dt;
 		this._updateAccel(dt);
+		if(!this._timeout)
+			this._rspe += RSPE_ACC * dt;
+		if(this._rspe > RSPE_MAX)
+			this._rspe = RSPE_MAX;
+		this._roll += this._rspe * dt;
 		const {floor, height} = this._globals.collision.findFloorHeight(...this._pos);
 		// If out of bounds
 		if(floor == null) {
