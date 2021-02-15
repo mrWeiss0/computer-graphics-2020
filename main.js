@@ -46,6 +46,7 @@ async function main() {
 	program.uniformBlockBinding("u_daylight", game.globals.buffers.daylight.bindingPoint);
 	for(const rend of game.getRendererList("rockets")) {
 		rend.program = program;
+		rend._reflect = [.6, .8, 1];
 		rend.initVAO();
 	}
 	for(const rend of game.getRendererList("terrains")) {

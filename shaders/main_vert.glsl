@@ -6,6 +6,7 @@ uniform mat4 u_viewmat;
 
 uniform float u_ON_A;
 uniform float u_ON_B;
+uniform vec3  u_reflect;
 float decay_base = 100.;
 
 struct dir_light {
@@ -36,6 +37,7 @@ in  mat3 a_normmat;
 
 out vec2 v_texcoord;
 out vec4 v_light;
+out vec4 v_light_spe;
 
 void main() {
 	gl_Position = u_projmat * a_objmat * a_position;
@@ -44,13 +46,14 @@ void main() {
 	vec3 position = vec3(a_objmat * a_position);
 	vec3 normal   = normalize(a_normmat * a_normal);
 
+	vec3 lightDir = normalize(mat3(u_viewmat) * u_sun_light.direction);
+	vec3 eyeDir = normalize(-position);
+	
 	/* Sun light Oren Nayar */
 	{
-		vec3  lightDir = normalize(mat3(u_viewmat) * u_sun_light.direction);
 		float cosLight = dot(normal, lightDir);
 		float ON_coeff = u_ON_A;
 		if(u_ON_B != 0.) {
-			vec3  eyeDir = normalize(-position);
 			float cosEye = dot(normal, eyeDir);
 			float ON_G   = max( 0., dot(
 				normalize(lightDir - cosLight * normal),
@@ -63,6 +66,13 @@ void main() {
 			}
 		}
 		light += u_sun_light.color * ON_coeff * clamp(cosLight, 0., 1.);
+	}
+
+	/* Sun light reflects */
+	v_light_spe = vec4(0, 0, 0, 1.);
+	if(length(u_reflect) > 0.) {
+		vec3 refl = -reflect(lightDir, normal);
+		v_light_spe.rgb = u_sun_light.color * pow(clamp(dot(eyeDir, refl), 0., 1.), 64.);
 	}
 
 	/* Point lights Lambert */

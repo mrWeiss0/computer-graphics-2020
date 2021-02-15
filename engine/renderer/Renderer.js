@@ -8,6 +8,7 @@ export class Renderer extends AbstractRenderer {
 		this._vao        = this._globals.glContext.createVertexArray();
 		this._matArray   = new Float32Array(16 + 9);
 		this.roughness   = 0;
+		this._reflect    = [0, 0, 0];
 	}
 
 	get mesh() {
@@ -86,5 +87,6 @@ export class Renderer extends AbstractRenderer {
 		gl.uniformMatrix4fv(this._program.getUniformLocation("u_projmat"), false, this.projMatrix);
 		gl.uniform1f(this._program.getUniformLocation("u_ON_A"), this._ON_A);
 		gl.uniform1f(this._program.getUniformLocation("u_ON_B"), this._ON_B);
+		gl.uniform3fv(this._program.getUniformLocation("u_reflect"), this._reflect);
 	}
 }
