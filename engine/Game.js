@@ -53,6 +53,7 @@ export class Game extends utils.App {
 			[      "scopes",      ClipBillboardRenderer ]
 		);
 		this.currentRocket = 0;
+		this.rocketQueue = [];
 		this.skyboxes = new Map();
 		this.activeSkybox = null;
 		this.scope = {target : [0, 0, 0], size : [.08, .08], frameN : 1};
@@ -62,8 +63,6 @@ export class Game extends utils.App {
 		glContext.clearColor(0, 0, 0, 0);
 		glContext.enable(glContext.CULL_FACE);
 		glContext.blendFunc(glContext.SRC_ALPHA, glContext.ONE_MINUS_SRC_ALPHA);
-
-		this._test = true;
 	}
 
 	get modelLoader() {
@@ -118,31 +117,49 @@ export class Game extends utils.App {
 	click(e) {
 		if(!this.mouse.pointerLock)
 			return;
-		//test(this, 1);
-		rocketFollowTest(this);
+		if(e.button == 0) {
+			const point = this.ray(0, 0);
+			if(point) {
+				point.y += 180;
+				const rocket = new Rocket(this.globals, this.currentRocketRend, game.getRendererList("explosions")).position(...point).scale(50);
+				this.rocketQueue.push(rocket);
+				this.globals.rockets.addRocket(rocket);
+			}
+		}
+		if(e.button == 2) {
+			const point = this.ray(0, 0);
+			if(point) {
+				for(const rocket of this.rocketQueue)
+					rocket.trajectory(point, randHeight(2500), randAcc(this.globals.gravity)).launch();
+				this.rocketQueue.length = 0;
+			}
+		}
 	}
 
 	keydown(e) {
 		const digitPress = e.code.match(/Digit(\d)/);
-		if(!digitPress)
-			return;
-		const rocketSel = +digitPress[1] - 1;
-		if(rocketSel >= 0 && rocketSel < game.getRendererList("rockets").length)
-			this.currentRocket = rocketSel;
+		if(digitPress) {
+			const rocketSel = +digitPress[1] - 1;
+			if(rocketSel >= 0 && rocketSel < game.getRendererList("rockets").length)
+				this.currentRocket = rocketSel;
+		}
+		if(this.keyboard.key("KeyZ"))
+			this.globals.toggleView();
+		if(this.keyboard.key("Enter"))
+			launchMany(this, 20);
 	}
 
 	update(dt) {
-		if(this.keyboard.key("Enter")) {
-			if(this._test) {
-				test(this);
-				this._test = false;
-			}
-		}
-		else
-			this._test = true;
-		if(this.keyboard.key("KeyZ"))
-			this.globals.followedRocket = null;
 		this.globals.update(dt);
+	}
+	
+	ray(x, y) {
+		const ray = Line.fromScreen(x, y, this.globals);
+		return this.globals.collision.rayCollision(ray);
+	}
+
+	get currentRocketRend() {
+		return this.getRendererList("rockets")[this.currentRocket];
 	}
 }
 
@@ -153,96 +170,29 @@ function createRendObject(...entries) {
 	return o;
 }
 
-function randRocket(game, havg = 3000) {
-	const acc = 2 ** (Math.random() * 2 - 2) * game.globals.gravity;
-	const h   = 1000 * (Math.random() * 2 - 1) + havg;
-
-	const renderers = game.getRendererList("rockets");
-	/*const r = Math.random();
-	let rend;
-	if(r < .8)
-		rend = renderers[1];
-	else
-		rend = renderers[0];*/
-	let rend = renderers[game.currentRocket];
-	
-	const x0 = 1000 * (Math.random() * 6 - 3);
-	const z0 = 1000 * (Math.random() * 4);
-	const {height : y0} = game.globals.collision.findFloorHeight(x0, Infinity, z0);
-
-	const x1 = 1000 * (Math.random() * 6 - 3);
-	const z1 = 1000 * (Math.random() * 4 - 4);
-	let {height : y1} = game.globals.collision.findFloorHeight(x1, Infinity, z1);
-	if(y1 == -Infinity) y1 = 0;
-
-	return new Rocket(game.globals, rend, game.getRendererList("explosions")).position(x0, y0 + 200, z0).trajectory([x1, y1, z1], h, acc);
+function randAcc(g) {
+	return 2 ** (Math.random() * 2 - 2) * g;
 }
 
-function test(game, count = 25) {
-	let rockets = [];
-	for(let i = 0; i < count; i++)
-		rockets.push(randRocket(game));
-	for(const rocket of rockets) {
-		game.globals.rockets.addRocket(rocket.scale(50));
+function randHeight(havg) {
+	return 1000 * (Math.random() * 2 - 1) + havg
+}
+
+function launchMany(game, count) {
+	for(let i = 0; i < count; i++) {
+		const x0 = 1000 * (Math.random() * 6 - 3);
+		const z0 = 1000 * (Math.random() * 4);
+		const {height : y0} = game.globals.collision.findFloorHeight(x0, Infinity, z0);
+
+		const x1 = 1000 * (Math.random() * 6 - 3);
+		const z1 = 1000 * (Math.random() * 4 - 4);
+		let {height : y1} = game.globals.collision.findFloorHeight(x1, Infinity, z1);
+		if(y1 == -Infinity) y1 = 0;
+
+		const rocket = new Rocket(game.globals, game.currentRocketRend, game.getRendererList("explosions"))
+		.position(x0, y0 + 180, z0).scale(50)
+		.trajectory([x1, y1, z1], randHeight(2500), randAcc(game.globals.gravity));
+		game.globals.rockets.addRocket(rocket);
 		rocket.launch();
 	}
-}
-
-function rayTest(game, havg = 3000){
-    const acc = 2 ** (Math.random() * 2 - .5) * game.globals.gravity;
-	const h   = 1000 * (Math.random() * 2 - 1) + havg;
-
-	const renderers = game.getRendererList("rockets");
-	const r = Math.random();
-	let rend;
-	if(r < .8)
-		rend = renderers[1];
-	else
-		rend = renderers[0];
-
-
-	const ray = Line.fromScreen(0,0, game.globals);
-	const rocketSpawn = game.globals.collision.rayCollision(ray);
-
-	const x0 = rocketSpawn.x;
-	const y0 = rocketSpawn.y;
-	const z0 = rocketSpawn.z;
-
-	const x1 = 1000 * (Math.random() * 8 - 4);
-	const z1 = 1000 * (Math.random() * 10 - 5);
-	let {height : y1} = game.globals.collision.findFloorHeight(x1, Infinity, z1);
-	if(y1 == -Infinity) y1 = 0;
-
-	const rocket =
-        new Rocket(game.globals, rend, game.getRendererList("explosions")).position(x0, y0, z0).trajectory([x1, y1, z1], h, acc);
-    game.globals.rockets.addRocket(rocket.scale(50));
-    rocket._rspe = .003;
-    rocket.launch();    
-}
-
-function rocketFollowTest(game, havg = 3000){
-    const acc = 2 ** (Math.random() * 2 - .5) * game.globals.gravity;
-	const h   = 1000 * (Math.random() * 2 - 1) + havg;
-	const renderers = game.getRendererList("rockets");
-	const r = Math.random();
-	let rend;
-	if(r < .8)
-		rend = renderers[1];
-	else
-		rend = renderers[0];
-
-	const x0 = 1000 * (Math.random() * 6 - 3);
-	const z0 = 1000 * (Math.random() * 4);
-	const {height : y0} = game.globals.collision.findFloorHeight(x0, Infinity, z0);
-
-	const x1 = 1000 * (Math.random() * 6 - 3);
-	const z1 = 1000 * (Math.random() * 4 - 4);
-	let {height : y1} = game.globals.collision.findFloorHeight(x1, Infinity, z1);
-	if(y1 == -Infinity) y1 = 0;
-
-	const rocket = new Rocket(game.globals, rend, game.getRendererList("explosions")).position(x0, y0 + 200, z0).trajectory([x1, y1, z1], h, acc);
-	game.globals.followedRocket = rocket;
-
-	game.globals.rockets.addRocket(rocket.scale(50));
-	rocket.launch();
 }

@@ -52,6 +52,13 @@ export class Globals {
 		return this.camera.viewMatrix;
 	}
 
+	toggleView() {
+		if(this.followedRocket)
+			this.followedRocket = null;
+		else
+			this.followedRocket = this.rockets._rocketsList;
+	}
+
 	update(dt) {
 		//this.sunHeight += 0.02;
 		//this.sunHeight %= 2 * Math.PI;
