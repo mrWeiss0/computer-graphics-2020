@@ -58,6 +58,35 @@
 					"texture": "top.png"
 				}
 			]
+		},
+		{
+			"name"  : "calcjur_hq/",
+			"faces" : [
+				{
+					"target" : "TEXTURE_CUBE_MAP_NEGATIVE_X",
+					"texture": "left.png"
+				},
+				{
+					"target" : "TEXTURE_CUBE_MAP_POSITIVE_X",
+					"texture": "right.png"
+				},
+				{
+					"target" : "TEXTURE_CUBE_MAP_NEGATIVE_Z",
+					"texture": "front.png"
+				},
+				{
+					"target" : "TEXTURE_CUBE_MAP_POSITIVE_Z",
+					"texture": "back.png"
+				},
+				{
+					"target" : "TEXTURE_CUBE_MAP_NEGATIVE_Y",
+					"texture": "bottom.png"
+				},
+				{
+					"target" : "TEXTURE_CUBE_MAP_POSITIVE_Y",
+					"texture": "top.png"
+				}
+			]
 		}
 	]
 }
