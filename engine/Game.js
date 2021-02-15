@@ -1,6 +1,6 @@
 import { Camera } from "./Camera.js";
 import {utils, Globals, ModelLoader} from "./index.js";
-import {InstancedRenderer, InstancedBillboardRenderer, Renderer} from "./renderer/index.js";
+import {InstancedRenderer, InstancedBillboardRenderer, Renderer, ClipBillboardRenderer} from "./renderer/index.js";
 import {Rocket} from "./rocket/index.js";
 const Mat4 = utils.matrix.Mat4;
 const [NEAR, FAR] = [50, 20000];
@@ -41,10 +41,12 @@ export class Game extends utils.App {
 			[ "terrains",          Renderer ]
 		);
 		this.billboardRends = createRendObject(
-			[  "explosions", InstancedBillboardRenderer ]
+			[  "explosions", InstancedBillboardRenderer ],
+			[      "scopes",      ClipBillboardRenderer ]
 		);
 		this.skyboxes = new Map();
 		this.activeSkybox = null;
+		this.scope = {target : [0, 0, 0], size : [.08, .08], frameN : 1};
 
 		this.autoResize();
 
@@ -53,7 +55,6 @@ export class Game extends utils.App {
 		glContext.blendFunc(glContext.SRC_ALPHA, glContext.ONE_MINUS_SRC_ALPHA);
 
 		this._test = true;
-		this.i = 0;
 	}
 
 	get modelLoader() {
@@ -73,6 +74,7 @@ export class Game extends utils.App {
 		const [w, h] = [this.canvas.clientWidth, this.canvas.clientHeight];
 		this.resize(w, h);
 		this.globals.projMatrix = Mat4.perspFOV(Math.PI / 4, w / h, NEAR, FAR);
+		this.globals.ar = w / h;
 		this.glContext.viewport(0, 0, this.canvas.width, this.canvas.height);
 	}
 
@@ -92,6 +94,7 @@ export class Game extends utils.App {
 		this.globals.rockets.drawExplosions();
 		for(const r of this.getRendererList("explosions"))
 			r.flush();
+		this.getRendererList("scopes")[0].draw(this.scope);
 		gl.disable(gl.BLEND);
 		gl.disable(gl.DEPTH_TEST);
 	}

@@ -65,6 +65,10 @@ async function main() {
 		rend.program = billboardProg;
 		rend.initVAO();
 	}
+	for(const rend of game.getRendererList("scopes")) {
+		rend.program = billboardProg;
+		rend.initVAO();
+	}
 
 	game.globals.camera.position(10000, 6000, 8000);
 	game.run();

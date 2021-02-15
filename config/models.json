@@ -32,5 +32,17 @@
 				"texture" : "explosion.png"
 			}
 		]
+	},
+	"scopes" : {
+		"path"   : "assets/billboards/",
+		"models" : [
+			{
+				"sheetWidth"  :   1,
+				"sheetHeight" :   1,
+				"frameCount"  :   1,
+				"anchor"      :   4,
+				"texture" : "scope.png"
+			}
+		]
 	}
 }

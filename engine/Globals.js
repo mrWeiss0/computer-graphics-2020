@@ -9,6 +9,7 @@ export class Globals {
 		this.gravity = .001; // cm * ms^-2 [ g = 0.001]
 		this.buffers = {};
 		this.projMatrix = Mat4.identity;
+		this.ar = 1;
 		this.collision = null;
 		this.mouse = null;
 		this.keyboard = null;
