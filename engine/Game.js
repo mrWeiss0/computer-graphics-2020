@@ -20,6 +20,7 @@ export class Game extends utils.App {
 		this.mouse.register(this);
 		this.mouse.enablePointerLock();
 		this.initKeyboard();
+		this.keyboard.register(this);
 
 		const glContext = this.glContext;
 		this.globals = new Globals(this.glContext);
@@ -51,6 +52,7 @@ export class Game extends utils.App {
 			[  "explosions", InstancedBillboardRenderer ],
 			[      "scopes",      ClipBillboardRenderer ]
 		);
+		this.currentRocket = 0;
 		this.skyboxes = new Map();
 		this.activeSkybox = null;
 		this.scope = {target : [0, 0, 0], size : [.08, .08], frameN : 1};
@@ -119,7 +121,16 @@ export class Game extends utils.App {
 		//test(this, 1);
 		rocketFollowTest(this);
 	}
-	
+
+	keydown(e) {
+		const digitPress = e.code.match(/Digit(\d)/);
+		if(!digitPress)
+			return;
+		const rocketSel = +digitPress[1] - 1;
+		if(rocketSel >= 0 && rocketSel < game.getRendererList("rockets").length)
+			this.currentRocket = rocketSel;
+	}
+
 	update(dt) {
 		if(this.keyboard.key("Enter")) {
 			if(this._test) {
@@ -147,12 +158,13 @@ function randRocket(game, havg = 3000) {
 	const h   = 1000 * (Math.random() * 2 - 1) + havg;
 
 	const renderers = game.getRendererList("rockets");
-	const r = Math.random();
+	/*const r = Math.random();
 	let rend;
 	if(r < .8)
 		rend = renderers[1];
 	else
-		rend = renderers[0];
+		rend = renderers[0];*/
+	let rend = renderers[game.currentRocket];
 	
 	const x0 = 1000 * (Math.random() * 6 - 3);
 	const z0 = 1000 * (Math.random() * 4);
