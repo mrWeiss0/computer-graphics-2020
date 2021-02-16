@@ -1,7 +1,7 @@
 import {loadFile} from "./webgl2-utils/index.js";
 import {Game} from "./engine/index.js";
 
-const DEBUG = true;
+const DEBUG = false;
 
 function createCanvas(parentElement) {
 	let canvas = document.createElement("canvas");
